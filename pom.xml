@@ -27,7 +27,7 @@
     <dependency>
       <groupId>org.openjfx</groupId>
       <artifactId>javafx-controls</artifactId>
-      <version>${javafx.version}</version>
+      <version>19.0.2.1</version>
       <scope>compile</scope>
     </dependency>
     
