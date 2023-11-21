@@ -15,7 +15,7 @@ import java.net.Socket;
 
 public class GuiClient extends Application{
 
-	private Socket socket;
+//	private Socket socket;
 	private ObjectInputStream inputStream;
 	private ObjectOutputStream outputStream;
 
@@ -123,15 +123,19 @@ public class GuiClient extends Application{
 	}
 
 	private boolean connectToServer(int port) {
-		try {
-			socket = new Socket("127.0.0.1", port);
-			outputStream = new ObjectOutputStream(socket.getOutputStream());
-			inputStream = new ObjectInputStream(socket.getInputStream());
+		//			socket = new Socket("127.0.0.1", port);
+//			outputStream = new ObjectOutputStream(socket.getOutputStream());
+//			inputStream = new ObjectInputStream(socket.getInputStream());
+		//	private Socket socket;
+		Client client = new Client("127.0.0.1", port);
+		client.start();
+
+		if (client.isConnected()) {
+			outputStream = client.getOut();
+			inputStream = client.getIn();
 			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
+		} else {
 			return false;
-			// Handle the connection failure, e.g., show an error message to the user
 		}
 	}
 
