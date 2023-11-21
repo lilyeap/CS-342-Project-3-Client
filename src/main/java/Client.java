@@ -5,8 +5,6 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.util.function.Consumer;
 
-
-
 public class Client extends Thread{
 
 	
@@ -18,7 +16,6 @@ public class Client extends Thread{
 	private Consumer<Serializable> callback;
 	
 	Client(Consumer<Serializable> call){
-	
 		callback = call;
 	}
 	
