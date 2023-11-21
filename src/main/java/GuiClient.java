@@ -12,14 +12,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class GuiServer extends Application{
+public class GuiClient extends Application{
 
 	private Socket socket;
 	private ObjectInputStream inputStream;
 	private ObjectOutputStream outputStream;
 
-	private TextField ipField = new TextField();
-	private PasswordField portField = new PasswordField();
+//	private TextField ipField = new TextField();
+	private TextField portField = new TextField();
 	private Button loginButton = new Button("Login");
 
 	private Scene loginScene;
@@ -46,15 +46,14 @@ public class GuiServer extends Application{
 		primaryStage.show();
 
 		loginButton.setOnAction(event -> {
-			String serverAddress = ipField.getText(); // Replace with the actual server IP
+//			String serverAddress = ipField.getText(); // Replace with the actual server IP
 			String portPass = portField.getText();; // Replace with the actual server port
 
 			try {
 				int port = Integer.parseInt(portPass);
 
-				System.out.println(serverAddress);
 				System.out.println(port);
-				connectToServer(serverAddress, port);
+				connectToServer(port);
 
 				primaryStage.setScene(gameScene);
 			} catch (NumberFormatException e) {
@@ -62,21 +61,19 @@ public class GuiServer extends Application{
 			}
 		});
 
-		submitButton.setOnAction(event -> submitGuess());
+//		submitButton.setOnAction(event -> submitGuess());
 	}
 
 	private void createLoginScene() {
-		Label ipLabel = new Label("IP:");
-		Label passwordLabel = new Label("Port:");
+		Label portLabel = new Label("Port:");
 
 		VBox loginLayout = new VBox(10); // 10 is the spacing between children
 		loginLayout.getChildren().addAll(
-				ipLabel, ipField,
-				passwordLabel, portField,
+				portLabel, portField,
 				loginButton
 		);
 
-		loginScene = new Scene(loginLayout, 300, 200);
+		loginScene = new Scene(loginLayout, 500, 400);
 	}
 
 	private void createGameScene() {
@@ -90,12 +87,12 @@ public class GuiServer extends Application{
 				submitButton, resultLabel
 		);
 
-		gameScene = new Scene(gameLayout, 300, 200);
+		gameScene = new Scene(gameLayout, 500, 400);
 	}
 
-	private void connectToServer(String serverAddress, int port) {
+	private void connectToServer(int port) {
 		try {
-			socket = new Socket(serverAddress, port);
+			socket = new Socket("127.0.0.1", port);
 			outputStream = new ObjectOutputStream(socket.getOutputStream());
 			inputStream = new ObjectInputStream(socket.getInputStream());
 		} catch (IOException e) {
@@ -104,8 +101,18 @@ public class GuiServer extends Application{
 		}
 	}
 
-	private void submitGuess() {
-		// implement guess submission logic here ?
-	}
+//	private void submitGuess() {
+//		// Implement guess submission logic here
+//		String category = categoryField.getText().toUpperCase();
+//		String guess = guessField.getText().toUpperCase();
+//		String message = "GUESS:" + category + ":" + guess;
+//
+//		try {
+//			// Send the guess to the server
+//			outputStream.writeObject(message);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//	}
 
 }

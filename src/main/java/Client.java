@@ -6,34 +6,32 @@ import java.net.Socket;
 import java.util.function.Consumer;
 
 public class Client extends Thread{
-
-	
+	String serverAddress;
+	int port;
 	Socket socketClient;
-	
 	ObjectOutputStream out;
 	ObjectInputStream in;
-	
 	private Consumer<Serializable> callback;
 	
-	Client(Consumer<Serializable> call){
+	Client(Consumer<Serializable> call, int serverPort, String serverA){
 		callback = call;
+		port = serverPort;
+		serverAddress = serverA;
 	}
 	
 	public void run() {
-		
 		try {
-		socketClient= new Socket("127.0.0.1",5555);
-	    out = new ObjectOutputStream(socketClient.getOutputStream());
-	    in = new ObjectInputStream(socketClient.getInputStream());
-	    socketClient.setTcpNoDelay(true);
-		}
-		catch(Exception e) {}
+			socketClient= new Socket(serverAddress, port);
+			out = new ObjectOutputStream(socketClient.getOutputStream());
+			in = new ObjectInputStream(socketClient.getInputStream());
+			socketClient.setTcpNoDelay(true);
+		} catch(Exception e) {}
 		
 		while(true) {
-			 
 			try {
-			String message = in.readObject().toString();
-			callback.accept(message);
+				String message = in.readObject().toString();
+				handleServerMessage(message);
+//			callback.accept(message);
 			}
 			catch(Exception e) {}
 		}
@@ -48,6 +46,10 @@ public class Client extends Thread{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	private void handleServerMessage(String message){
+		callback.accept(message);
 	}
 
 
