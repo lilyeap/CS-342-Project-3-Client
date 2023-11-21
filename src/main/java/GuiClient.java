@@ -46,18 +46,17 @@ public class GuiClient extends Application{
 		primaryStage.show();
 
 		loginButton.setOnAction(event -> {
-//			String serverAddress = ipField.getText(); // Replace with the actual server IP
-			String portPass = portField.getText();; // Replace with the actual server port
-
+			String portPass = portField.getText();
 			try {
 				int port = Integer.parseInt(portPass);
 
-				System.out.println(port);
-				connectToServer(port);
-
-				primaryStage.setScene(gameScene);
+				if (connectToServer(port)) {
+					primaryStage.setScene(gameScene);
+				} else {
+					showAlert("Connection Failed", "Unable to connect to the server.");
+				}
 			} catch (NumberFormatException e) {
-//				e.printStackTrace();
+				showAlert("Invalid Port", "Please enter a valid port number.");
 			}
 		});
 
@@ -65,7 +64,7 @@ public class GuiClient extends Application{
 	}
 
 	private void createLoginScene() {
-		Label portLabel = new Label("Port:");
+		Label portLabel = new Label("Please Enter Port Number to Connect to:");
 
 		VBox loginLayout = new VBox(10); // 10 is the spacing between children
 		loginLayout.getChildren().addAll(
@@ -90,15 +89,25 @@ public class GuiClient extends Application{
 		gameScene = new Scene(gameLayout, 500, 400);
 	}
 
-	private void connectToServer(int port) {
+	private boolean connectToServer(int port) {
 		try {
 			socket = new Socket("127.0.0.1", port);
 			outputStream = new ObjectOutputStream(socket.getOutputStream());
 			inputStream = new ObjectInputStream(socket.getInputStream());
+			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
+			return false;
 			// Handle the connection failure, e.g., show an error message to the user
 		}
+	}
+
+	private void showAlert(String title, String content) {
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.setTitle(title);
+		alert.setHeaderText(null);
+		alert.setContentText(content);
+		alert.showAndWait();
 	}
 
 //	private void submitGuess() {
