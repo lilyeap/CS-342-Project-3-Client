@@ -34,7 +34,9 @@ public class Client extends Thread{
 				// read in stats of the game
 				DataExchange dataExchange = (DataExchange) in.readObject();
 				handleServerMessage(dataExchange);
-				
+
+				// idk if we need to check this here
+				// prob need to check it in the guiclient?
 				if (dataExchange.getRoundEnded()){
 					if (dataExchange.getRoundResult()){
 						// player won, change ui
@@ -44,7 +46,7 @@ public class Client extends Thread{
 				}
 
 				// need to add to dataexchange
-				// s.t. we need to receive whole game won/loss and then end the client after the 3 rounds
+				// s.t. we need to check whole game ended or not
 			}
 			catch(Exception e) {break;}
 		}
