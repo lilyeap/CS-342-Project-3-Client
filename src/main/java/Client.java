@@ -16,11 +16,11 @@ public class Client extends Thread{
 	boolean roundEnded;
 	boolean roundResult;
 
-	Client(int serverPort, String serverA){
+	Client(String serverA, int serverPort){
 		port = serverPort;
 		serverAddress = serverA;
 	}
-	
+
 	public void run() {
 		try {
 			socketClient= new Socket(serverAddress, port);
@@ -28,30 +28,42 @@ public class Client extends Thread{
 			in = new ObjectInputStream(socketClient.getInputStream());
 			socketClient.setTcpNoDelay(true);
 		} catch(Exception e) {}
-		
+
 		while(true) {
 			try {
 				// read in stats of the game
-				DataExchange dataExchange = (DataExchange) in.readObject();
-				handleServerMessage(dataExchange);
+//				DataExchange dataExchange = (DataExchange) in.readObject();
+//				handleServerMessage(dataExchange);
 
 				// idk if we need to check this here
 				// prob need to check it in the guiclient?
-				if (dataExchange.getRoundEnded()){
-					if (dataExchange.getRoundResult()){
+//				if (dataExchange.getRoundEnded()){
+//					if (dataExchange.getRoundResult()){
 						// player won, change ui
-					} else {
+//					} else {
 						// player lost, change ui
-					}
-				}
+//					}
+//				}
 
 				// need to add to dataexchange
 				// s.t. we need to check whole game ended or not
 			}
 			catch(Exception e) {break;}
 		}
-	
+
     }
+
+	public boolean isConnected() {
+		return socketClient != null && !socketClient.isClosed();
+	}
+
+	public ObjectOutputStream getOut(){
+		return out;
+	}
+
+	public ObjectInputStream getIn(){
+		return in;
+	}
 
 
 	private void handleServerMessage(DataExchange dataExchange){
