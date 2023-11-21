@@ -11,10 +11,12 @@ public class Client extends Thread{
 	Socket socketClient;
 	ObjectOutputStream out;
 	ObjectInputStream in;
-	private Consumer<Serializable> callback;
-	
-	Client(Consumer<Serializable> call, int serverPort, String serverA){
-		callback = call;
+	int remainingGuesses;
+	char[] userGuess;
+	boolean roundEnded;
+	boolean roundResult;
+
+	Client(int serverPort, String serverA){
 		port = serverPort;
 		serverAddress = serverA;
 	}
@@ -29,27 +31,39 @@ public class Client extends Thread{
 		
 		while(true) {
 			try {
-				String message = in.readObject().toString();
-				handleServerMessage(message);
-//			callback.accept(message);
+				// read in stats of the game
+				DataExchange dataExchange = (DataExchange) in.readObject();
+				handleServerMessage(dataExchange);
+				
+				if (dataExchange.getRoundEnded()){
+					if (dataExchange.getRoundResult()){
+						// player won, change ui
+					} else {
+						// player lost, change ui
+					}
+				}
+
+				// need to add to dataexchange
+				// s.t. we need to receive whole game won/loss and then end the client after the 3 rounds
 			}
-			catch(Exception e) {}
+			catch(Exception e) {break;}
 		}
 	
     }
-	
-	public void send(String data) {
-		
-		try {
-			out.writeObject(data);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
+
+	private void handleServerMessage(DataExchange dataExchange){
+		remainingGuesses = dataExchange.getRemainingGuesses();
+		userGuess = dataExchange.getUserGuess();
+		roundEnded = dataExchange.getRoundEnded();
+		roundResult = dataExchange.getRoundResult();
 	}
 
-	private void handleServerMessage(String message){
-		callback.accept(message);
+	public int getRemainingGuesses(){
+		return remainingGuesses;
+	}
+	public char[] getUserGuess(){
+		return userGuess;
 	}
 
 
