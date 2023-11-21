@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 public class DataExchange implements Serializable {
@@ -8,15 +9,19 @@ public class DataExchange implements Serializable {
     private char character;
     private int remainingGuesses;
     private char[] userGuess;
+    private boolean roundEnded = false;
+    private boolean roundResult = false;
 
     public DataExchange(String category, char character) {
         this.category = category;
         this.character = character;
     }
 
-    public DataExchange(int remainingGuesses, char[] userGuess){
+    public DataExchange(int remainingGuesses, char[] userGuess, boolean roundEnded, boolean roundResult){
         this.remainingGuesses = remainingGuesses;
         this.userGuess = userGuess;
+        this.roundEnded = roundEnded;
+        this.roundResult = roundResult;
     }
 
     // receiving msg
@@ -30,12 +35,25 @@ public class DataExchange implements Serializable {
         }
     }
 
+    public void sendMessage(ObjectOutputStream out) {
+        try {
+            out.writeObject(this);
+        } catch (IOException e) {
+            System.out.println("Error sending message: " + e.getMessage());
+            // Handle exception
+        }
+    }
+
     // getters + setters for client
     public String getCategory() {
         return category;
     }
 
     public char getChar() { return character; }
+
+    public boolean getRoundEnded() { return roundEnded; }
+
+    public boolean getRoundResult() {return roundResult;}
 
     public void setRemainingGuesses(int remainingGuesses){
         this.remainingGuesses = remainingGuesses;
