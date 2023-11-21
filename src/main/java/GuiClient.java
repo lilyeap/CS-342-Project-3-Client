@@ -115,6 +115,10 @@ public class GuiClient extends Application{
 	}
 
 	private void handleCategoryButtonClick(String selectedCategory) {
+		// send message to server
+		DataExchange sendCategory = new DataExchange(selectedCategory, '0');
+		sendCategory.sendMessage(outputStream);
+
 		primaryStage.setScene(createGameScene());
 	}
 
