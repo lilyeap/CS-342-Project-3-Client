@@ -34,22 +34,7 @@ public class Client extends Thread{
 
 		while(true) {
 			try {
-				// read in stats of the game
-//				DataExchange dataExchange = (DataExchange) in.readObject();
-//				handleServerMessage(dataExchange);
 
-				// idk if we need to check this here
-				// prob need to check it in the guiclient?
-//				if (dataExchange.getRoundEnded()){
-//					if (dataExchange.getRoundResult()){
-						// player won, change ui
-//					} else {
-						// player lost, change ui
-//					}
-//				}
-
-				// need to add to dataexchange
-				// s.t. we need to check whole game ended or not
 			}
 			catch(Exception e) {break;}
 		}
@@ -68,20 +53,6 @@ public class Client extends Thread{
 		return in;
 	}
 
-
-	private void handleServerMessage(DataExchange dataExchange){
-		remainingGuesses = dataExchange.getRemainingGuesses();
-		userGuess = dataExchange.getUserGuess();
-		roundEnded = dataExchange.getRoundEnded();
-		roundResult = dataExchange.getRoundResult();
-	}
-
-	public int getRemainingGuesses(){
-		return remainingGuesses;
-	}
-	public char[] getUserGuess(){
-		return userGuess;
-	}
 
 
 }
