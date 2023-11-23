@@ -17,11 +17,13 @@ import java.net.Socket;
 import java.util.Set;
 
 public class GuiClient extends Application{
+	DataExchange sendData = new DataExchange("none", '0');
 
 	DataExchange receiveStatus = new DataExchange("none", '0');
 	private ObjectInputStream inputStream;
 	ListView<String> listItems, listItems2;
 	private ObjectOutputStream outputStream;
+
 	private TextField portField = new TextField();
 	private Button loginButton = new Button("Login");
 	private Button b1 = new Button("Animals");
@@ -109,7 +111,26 @@ public class GuiClient extends Application{
 		return new Scene(centerLayout, 500, 400);
 	}
 
-	private char selectedLetter = '\0'; // Initialize with a default value
+
+	private void handleGuessSubmit(char c){
+		sendData.setCharacter(c);
+		sendData.sendMessage(outputStream);
+
+		// process guess from server
+		receiveStatus = DataExchange.receiveMessage(inputStream);
+		assert receiveStatus != null;
+
+		boolean isLetterFound = receiveStatus.isLetterFound(); // is letter found or not
+		int remainingGuesses = receiveStatus.getRemainingGuesses(); // user's guesses left
+		int numToGuess = receiveStatus.getNumToGuess(); // total letters in the word to guess
+		int numGuessed = receiveStatus.getNumGuessed(); // letters that are correctly guessed
+		Set<Integer> indices = receiveStatus.getIndices(); // indices of that letter in the string
+
+		System.out.println("received status");
+
+	}
+
+	char selectedLetter = '\0'; // Initialize with a default value
 
 	private Scene createGameScene() {
 		Button[] letterButtons = createLetterButtons();
@@ -126,18 +147,17 @@ public class GuiClient extends Application{
 		VBox keyboardLayout = new VBox(10, row1, row2, row3, submitButton);
 		keyboardLayout.setAlignment(Pos.BOTTOM_CENTER);
 
-		submitButton.setOnAction(event -> {
-			submitGuess(String.valueOf(selectedLetter));
 
+		submitButton.setOnAction(event -> {
 			for (Button button : letterButtons) {
 				if (button.getText().equals(String.valueOf(selectedLetter))) {
 					button.setDisable(true);
 					break;
 				}
 			}
-			selectedLetter = '\0';
-
+			System.out.println(selectedLetter);
 			handleGuessSubmit(selectedLetter);
+			selectedLetter = '\0';
 		});
 
 		return new Scene(keyboardLayout, 500, 400);
@@ -162,8 +182,8 @@ public class GuiClient extends Application{
 
 	private void handleCategoryButtonClick(String selectedCategory) {
 		// send message to server
-		DataExchange sendCategory = new DataExchange(selectedCategory, '0');
-		sendCategory.sendMessage(outputStream);
+		sendData.setCategory(selectedCategory);
+		sendData.sendMessage(outputStream);
 
 		primaryStage.setScene(createGameScene());
 	}
@@ -193,32 +213,9 @@ public class GuiClient extends Application{
 		alert.showAndWait();
 	}
 
-	private void submitGuess(String letter) {
-		try {
-			outputStream.writeObject(letter);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void handleGuessSubmit(char c){
-		DataExchange sendChar = new DataExchange("none", c);
-		sendChar.sendMessage(outputStream);
-
-		// process guess from server
-		receiveStatus = DataExchange.receiveMessage(inputStream);
-		assert receiveStatus != null;
-
-		boolean isLetterFound = receiveStatus.isLetterFound(); // is letter found or not
-		int remainingGuesses = receiveStatus.getRemainingGuesses(); // user's guesses left
-		int numToGuess = receiveStatus.getNumToGuess(); // total letters in the word to guess
-		int numGuessed = receiveStatus.getNumGuessed(); // letters that are correctly guessed
-		Set<Integer> indices = receiveStatus.getIndices(); // indices of that letter in the string
-
-		System.out.println("received status");
 
 
-	}
+
 
 
 
