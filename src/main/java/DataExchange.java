@@ -2,29 +2,37 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Set;
 
 public class DataExchange implements Serializable {
     private static final long serialVersionUID = 1L;
+
+    // receive from the client
     private String category;
     private char character;
+
+    // send to the client
+    private boolean letterFound;
     private int remainingGuesses;
-    private char[] userGuess;
-    boolean roundEnded = false;
-    boolean roundResult = false;
+    private int numToGuess;
+    private int numGuessed;
+    private Set<Integer> indices;
+
 
     public DataExchange(String category, char character) {
         this.category = category;
         this.character = character;
     }
 
-    public DataExchange(int remainingGuesses, char[] userGuess, boolean roundEnded, boolean roundResult){
+    public DataExchange(boolean letterFound, int remainingGuesses, int numToGuess, int numGuessed, Set<Integer> indices){
+        this.letterFound = letterFound;
         this.remainingGuesses = remainingGuesses;
-        this.userGuess = userGuess;
-        this.roundEnded = roundEnded;
-        this.roundResult = roundResult;
+        this.numToGuess = numToGuess;
+        this.numGuessed = numGuessed;
+        this.indices = indices;
     }
 
-    // Method to send this message to a client
+    // receive/send methods
     public void sendMessage(ObjectOutputStream out) {
         try {
             out.writeObject(this);
@@ -43,35 +51,43 @@ public class DataExchange implements Serializable {
         }
     }
 
-    // getters + setters for server
+    // getters for server
     public String getCategory() {
         return category;
     }
 
     public char getChar() { return character; }
 
-    public void setRemainingGuesses(int remainingGuesses){
-        this.remainingGuesses = remainingGuesses;
-    }
-    public void setUserGuess(char[] userGuess){
-        this.userGuess = userGuess;
-    }
-
-    // getters + setters for the client
+    // getters for the client
+    public boolean isLetterFound(){ return letterFound; }
     public int getRemainingGuesses(){
         return remainingGuesses;
     }
-    public char[] getUserGuess(){
-        return userGuess;
+
+    public int getNumToGuess(){
+        return numToGuess;
     }
 
-    public boolean getRoundEnded() {
-        return roundEnded;
+    public int getNumGuessed(){
+        return numGuessed;
     }
 
-    public boolean getRoundResult() {
-        return roundResult;
-    }
+    public Set<Integer> getIndices() { return indices; }
+
+
+
+    //  setters for server
+    public void setLetterFound(boolean letterFound) {this.letterFound = letterFound;}
+
+    public void setRemainingGuesses(int remainingGuesses) {this.remainingGuesses = remainingGuesses;}
+
+    public void setNumToGuess(int numToGuess) {this.numToGuess = numToGuess;}
+
+    public void setNumGuessed(int numGuessed) {this.numGuessed = numGuessed;}
+
+    public void setIndices(Set<Integer> indices) {this.indices = indices;}
+
+
 
     public void setCategory(String category) {
         this.category = category;
