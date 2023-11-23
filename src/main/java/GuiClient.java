@@ -18,6 +18,7 @@ import java.net.Socket;
 public class GuiClient extends Application{
 
 //	private Socket socket;
+	DataExchange receiveStatus = new DataExchange("none", '0');
 	private ObjectInputStream inputStream;
 	ListView<String> listItems, listItems2;
 	private ObjectOutputStream outputStream;
@@ -122,6 +123,20 @@ public class GuiClient extends Application{
 		return new Scene(centerLayout, 500, 400);
 	}
 
+	private void handleGuessSubmit(char c){
+		DataExchange sendChar = new DataExchange("none", c);
+		sendChar.sendMessage(outputStream);
+
+		receiveStatus = DataExchange.receiveMessage(inputStream);
+        assert receiveStatus != null;
+
+        int remainingGuesses = receiveStatus.getRemainingGuesses();
+		char[] knownLtrs = receiveStatus.getUserGuess();
+		boolean roundEnded = receiveStatus.getRoundEnded();
+
+
+	}
+
 	private Scene createGameScene() {
 		Label promptLabel = new Label("Enter a letter to guess:");
 		TextField letterField = new TextField();
@@ -131,7 +146,17 @@ public class GuiClient extends Application{
 		guessLayout.getChildren().addAll(promptLabel, letterField, submitButton);
 		guessLayout.setAlignment(Pos.CENTER);
 
-//		submitButton.setOnAction(event -> handleGuessSubmit(letterField.getText()));
+		submitButton.setOnAction(event -> {
+			String text = letterField.getText();
+
+			// check if the text is exactly one character
+			if (text.length() == 1) {
+				handleGuessSubmit(text.toLowerCase().charAt(0));
+			} else {
+				showAlert("Submission error", "Please enter a single character.");
+			}
+			letterField.clear();
+		});
 
 		return new Scene(guessLayout, 500, 400);
 	}
