@@ -21,7 +21,6 @@ public class GuiClient extends Application{
 
 	DataExchange receiveStatus = new DataExchange("none", '0');
 	private ObjectInputStream inputStream;
-	ListView<String> listItems, listItems2;
 	private ObjectOutputStream outputStream;
 
 	private TextField portField = new TextField();
@@ -29,19 +28,10 @@ public class GuiClient extends Application{
 	private Button b1 = new Button("Animals");
 	private Button b2 = new Button("U.S. States");
 	private Button b3 = new Button("Superheroes");
-
-	private Scene loginScene;
-	private Scene gameScene;
-	private Scene cateScene;
-
-	private TextField categoryField = new TextField();
-	private TextField guessField = new TextField();
 	private TextField ipField = new TextField();
-	private Label resultLabel = new Label();
-	private Button submitButton = new Button("Submit Guess");
 	private Stage primaryStage;
 	private Client client;
-	private Socket socket;
+	char selectedLetter = '\0';
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -51,11 +41,6 @@ public class GuiClient extends Application{
 	public void start(Stage primaryStage) throws Exception {
 		this.primaryStage = primaryStage;
 		primaryStage.setTitle("Word Guessing Game - Client");
-
-		createLoginScene();
-		createCategoryScene();
-		createGameScene();
-
 		primaryStage.setScene(createLoginScene());
 
 		primaryStage.show();
@@ -66,7 +51,7 @@ public class GuiClient extends Application{
 				int port = Integer.parseInt(portPass);
 
 				if (connectToServer(port)) {
-					primaryStage.setScene(createCategoryScene());
+					primaryStage.setScene(createIntroScene());
 				} else {
 					showAlert("Connection Failed", "Unable to connect to the server.");
 				}
@@ -92,6 +77,45 @@ public class GuiClient extends Application{
 		return new Scene(loginLayout, 500, 400);
 	}
 
+	private Scene createIntroScene() {
+		Label welcomeLabel = new Label("Welcome to the Word Guessing Game!");
+		welcomeLabel.setAlignment(Pos.TOP_CENTER);
+		welcomeLabel.setStyle("-fx-font-size: 18;"); // Set the font size
+
+		Label instructionsLabel = new Label("Instructions:\n" +
+				"Your goal is to guess 3 different words in 3 different categories to win!\n" +
+				"First, you pick a category for the word guessing game.\n" +
+				"You have a total of six letter guesses, one at a time.\n" +
+				"To guess, press a letter and then 'Submit Guess'\n" +
+				"A correct guess will tell you where the letter is in the word\n" +
+				"A wrong guess will tell you that the letter is not in the word and how many guesses remain.\n" +
+				"If you guess the word within 6 letter guesses, you must choose from the two remaining categories.\n" +
+				"If you do not guess the word correctly, you may choose any of the three categories for another word.\n" +
+				"You may guess at a maximum of three words per category.\n" +
+				"If you do not make a correct guess within three attempts, the game is over.\n" +
+				"The game is won when you successfully guess one word in each category.\n" +
+				"When the game is over, you can either play again or quit.\n");
+
+		instructionsLabel.setAlignment(Pos.CENTER);
+
+		Button startPlayButton = new Button("Start Play");
+		Button exitButton = new Button("Exit Game");
+
+		// Set the action for the "Start Play" button
+		startPlayButton.setOnAction(event -> {
+			primaryStage.setScene(createCategoryScene());
+		});
+
+		exitButton.setOnAction(event -> {
+			System.exit(0);
+		});
+
+		VBox introLayout = new VBox(10, welcomeLabel, instructionsLabel, startPlayButton, exitButton);
+		introLayout.setAlignment(Pos.TOP_CENTER);
+
+		return new Scene(introLayout, 600, 400);
+	}
+
 	private Scene createCategoryScene() {
 		Label categoryLabel = new Label("Select Category:");
 
@@ -112,8 +136,9 @@ public class GuiClient extends Application{
 	}
 
 
-	private void handleGuessSubmit(char c){
+	private void handleGuessSubmit(char c) {
 		sendData.setCharacter(c);
+		System.out.println(c + "from inside handle guess1");
 		sendData.sendMessage(outputStream);
 
 		// process guess from server
@@ -129,8 +154,6 @@ public class GuiClient extends Application{
 		System.out.println("received status");
 
 	}
-
-	char selectedLetter = '\0'; // Initialize with a default value
 
 	private Scene createGameScene() {
 		Button[] letterButtons = createLetterButtons();
