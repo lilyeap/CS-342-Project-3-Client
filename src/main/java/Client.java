@@ -15,19 +15,22 @@ public class Client extends Thread{
 	char[] userGuess;
 	boolean roundEnded;
 	boolean roundResult;
+	Consumer<Serializable> callback;
 
-	Client(String serverA, int serverPort){
+	Client(int serverPort, Consumer<Serializable> call){
 		port = serverPort;
-		serverAddress = serverA;
+		callback = call;
 	}
 
 	public void run() {
 		try {
-			socketClient= new Socket(serverAddress, port);
+			socketClient= new Socket("127.0.0.1", port);
 			out = new ObjectOutputStream(socketClient.getOutputStream());
 			in = new ObjectInputStream(socketClient.getInputStream());
 			socketClient.setTcpNoDelay(true);
-		} catch(Exception e) {}
+		} catch(Exception e) {
+			System.out.println("couldnt connect: " + e);
+		}
 
 		while(true) {
 			try {
@@ -54,7 +57,7 @@ public class Client extends Thread{
     }
 
 	public boolean isConnected() {
-		return socketClient != null && !socketClient.isClosed();
+		return ((socketClient != null) && (!socketClient.isClosed()));
 	}
 
 	public ObjectOutputStream getOut(){

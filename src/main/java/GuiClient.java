@@ -2,7 +2,9 @@
 import java.io.IOException;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -17,6 +19,7 @@ public class GuiClient extends Application{
 
 //	private Socket socket;
 	private ObjectInputStream inputStream;
+	ListView<String> listItems, listItems2;
 	private ObjectOutputStream outputStream;
 
 //	private TextField ipField = new TextField();
@@ -32,9 +35,12 @@ public class GuiClient extends Application{
 
 	private TextField categoryField = new TextField();
 	private TextField guessField = new TextField();
+	private TextField ipField = new TextField();
 	private Label resultLabel = new Label();
 	private Button submitButton = new Button("Submit Guess");
 	private Stage primaryStage;
+	private Client client;
+	private Socket socket;
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -65,21 +71,37 @@ public class GuiClient extends Application{
 				}
 			} catch (NumberFormatException e) {
 				showAlert("Invalid Port", "Please enter a valid port number.");
-			}
-		});
+			} catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
 	}
 
 	private Scene createLoginScene() {
+		Label ipLabel = new Label("Please Enter IP Address:");
 		Label portLabel = new Label("Please Enter Port Number to Connect to:");
 
 		VBox loginLayout = new VBox(10); // 10 is the spacing between children
 		loginLayout.getChildren().addAll(
+				ipLabel, ipField, // Add IP address field
 				portLabel, portField,
 				loginButton
 		);
 
 		return new Scene(loginLayout, 500, 400);
 	}
+
+//	private Scene createLoginScene() {
+//		Label portLabel = new Label("Please Enter Port Number to Connect to:");
+//
+//		VBox loginLayout = new VBox(10); // 10 is the spacing between children
+//		loginLayout.getChildren().addAll(
+//				portLabel, portField,
+//				loginButton
+//		);
+//
+//		return new Scene(loginLayout, 500, 400);
+//	}
 
 	private Scene createCategoryScene() {
 		Label categoryLabel = new Label("Select Category:");
@@ -122,13 +144,17 @@ public class GuiClient extends Application{
 		primaryStage.setScene(createGameScene());
 	}
 
-	private boolean connectToServer(int port) {
-		//			socket = new Socket("127.0.0.1", port);
+	private boolean connectToServer(int port) throws InterruptedException {
+//			socket = new Socket("127.0.0.1", port);
 //			outputStream = new ObjectOutputStream(socket.getOutputStream());
 //			inputStream = new ObjectInputStream(socket.getInputStream());
-		//	private Socket socket;
-		Client client = new Client("127.0.0.1", port);
+//			private Socket socket;
+		client = new Client(port, data -> {
+			System.out.println("Received data: " + data);
+		});
+
 		client.start();
+		Thread.sleep(500);
 
 		if (client.isConnected()) {
 			outputStream = client.getOut();
