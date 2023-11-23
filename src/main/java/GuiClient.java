@@ -14,6 +14,7 @@ import javafx.scene.control.*;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Set;
 
 public class GuiClient extends Application{
 
@@ -135,6 +136,8 @@ public class GuiClient extends Application{
 				}
 			}
 			selectedLetter = '\0';
+
+			handleGuessSubmit(selectedLetter);
 		});
 
 		return new Scene(keyboardLayout, 500, 400);
@@ -166,10 +169,6 @@ public class GuiClient extends Application{
 	}
 
 	private boolean connectToServer(int port) throws InterruptedException {
-//			socket = new Socket("127.0.0.1", port);
-//			outputStream = new ObjectOutputStream(socket.getOutputStream());
-//			inputStream = new ObjectInputStream(socket.getInputStream());
-//			private Socket socket;
 		client = new Client(port, data -> {
 			System.out.println("Received data: " + data);
 		});
@@ -202,31 +201,25 @@ public class GuiClient extends Application{
 		}
 	}
 
-//	private void handleGuessSubmit(char c){
-//		DataExchange sendChar = new DataExchange("none", c);
-//		sendChar.sendMessage(outputStream);
-//
-//		receiveStatus = DataExchange.receiveMessage(inputStream);
-//		assert receiveStatus != null;
-//
-//		int remainingGuesses = receiveStatus.getRemainingGuesses();
-//		char[] knownLtrs = receiveStatus.getUserGuess();
-//		boolean roundEnded = receiveStatus.getRoundEnded();
-//
-//
-//	}
-	//was in the game scene method
-//	submitButton.setOnAction(event -> {
-//		String text = letterField.getText();
-//
-//		// check if the text is exactly one character
-//		if (text.length() == 1) {
-//			handleGuessSubmit(text.toLowerCase().charAt(0));
-//		} else {
-//			showAlert("Submission error", "Please enter a single character.");
-//		}
-//		letterField.clear();
-//	});
+	private void handleGuessSubmit(char c){
+		DataExchange sendChar = new DataExchange("none", c);
+		sendChar.sendMessage(outputStream);
+
+		// process guess from server
+		receiveStatus = DataExchange.receiveMessage(inputStream);
+		assert receiveStatus != null;
+
+		boolean isLetterFound = receiveStatus.isLetterFound(); // is letter found or not
+		int remainingGuesses = receiveStatus.getRemainingGuesses(); // user's guesses left
+		int numToGuess = receiveStatus.getNumToGuess(); // total letters in the word to guess
+		int numGuessed = receiveStatus.getNumGuessed(); // letters that are correctly guessed
+		Set<Integer> indices = receiveStatus.getIndices(); // indices of that letter in the string
+
+		System.out.println("received status");
+
+
+	}
+
 
 
 }
