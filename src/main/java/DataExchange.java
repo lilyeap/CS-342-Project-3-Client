@@ -9,8 +9,8 @@ public class DataExchange implements Serializable {
     private char character;
     private int remainingGuesses;
     private char[] userGuess;
-    private boolean roundEnded = false;
-    private boolean roundResult = false;
+    boolean roundEnded = false;
+    boolean roundResult = false;
 
     public DataExchange(String category, char character) {
         this.category = category;
@@ -24,7 +24,15 @@ public class DataExchange implements Serializable {
         this.roundResult = roundResult;
     }
 
-    // receiving msg
+    // Method to send this message to a client
+    public void sendMessage(ObjectOutputStream out) {
+        try {
+            out.writeObject(this);
+        } catch (IOException e) {
+            System.out.println("Error sending message: " + e.getMessage());
+            // Handle exception
+        }
+    }
     public static DataExchange receiveMessage(ObjectInputStream in) {
         try {
             return (DataExchange) in.readObject();
@@ -35,25 +43,12 @@ public class DataExchange implements Serializable {
         }
     }
 
-    public void sendMessage(ObjectOutputStream out) {
-        try {
-            out.writeObject(this);
-        } catch (IOException e) {
-            System.out.println("Error sending message: " + e.getMessage());
-            // Handle exception
-        }
-    }
-
-    // getters + setters for client
+    // getters + setters for server
     public String getCategory() {
         return category;
     }
 
     public char getChar() { return character; }
-
-    public boolean getRoundEnded() { return roundEnded; }
-
-    public boolean getRoundResult() {return roundResult;}
 
     public void setRemainingGuesses(int remainingGuesses){
         this.remainingGuesses = remainingGuesses;
@@ -69,6 +64,15 @@ public class DataExchange implements Serializable {
     public char[] getUserGuess(){
         return userGuess;
     }
+
+    public boolean getRoundEnded() {
+        return roundEnded;
+    }
+
+    public boolean getRoundResult() {
+        return roundResult;
+    }
+
     public void setCategory(String category) {
         this.category = category;
     }
