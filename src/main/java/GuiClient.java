@@ -136,55 +136,88 @@ public class GuiClient extends Application{
 	}
 
 
-	private void handleGuessSubmit(char c) {
-		sendData.setCharacter(c);
-		System.out.println(c + "from inside handle guess1");
-		sendData.sendMessage(outputStream);
+//	private void handleGuessSubmit(char c) {
+//		sendData.setCharacter(c);
+//		System.out.println(c + " from inside handle guess1");
+//		sendData.sendMessage(outputStream);
+//
+//		// process guess from server
+//		receiveStatus = DataExchange.receiveMessage(inputStream);
+//		assert receiveStatus != null;
+//
+//		boolean isLetterFound = receiveStatus.isLetterFound(); // is letter found or not
+//		int remainingGuesses = receiveStatus.getRemainingGuesses(); // user's guesses left
+//		int numToGuess = receiveStatus.getNumToGuess(); // total letters in the word to guess
+//		int numGuessed = receiveStatus.getNumGuessed(); // letters that are correctly guessed
+//		Set<Integer> indices = receiveStatus.getIndices(); // indices of that letter in the string
+//
+//		System.out.println("received status");
+//
+//	}
+	private void handleGuessSubmit(char c){
+		DataExchange sendChar = new DataExchange("none", c);
+		sendChar.sendMessage(outputStream);
 
-		// process guess from server
 		receiveStatus = DataExchange.receiveMessage(inputStream);
 		assert receiveStatus != null;
 
-		boolean isLetterFound = receiveStatus.isLetterFound(); // is letter found or not
-		int remainingGuesses = receiveStatus.getRemainingGuesses(); // user's guesses left
-		int numToGuess = receiveStatus.getNumToGuess(); // total letters in the word to guess
-		int numGuessed = receiveStatus.getNumGuessed(); // letters that are correctly guessed
-		Set<Integer> indices = receiveStatus.getIndices(); // indices of that letter in the string
-
-		System.out.println("received status");
-
+		int remainingGuesses = receiveStatus.getRemainingGuesses();
+//		char[] knownLtrs = receiveStatus.getUserGuess();
+//		boolean roundEnded = receiveStatus.getRoundEnded();
 	}
-
 	private Scene createGameScene() {
-		Button[] letterButtons = createLetterButtons();
+		Label promptLabel = new Label("Enter a letter to guess:");
+		TextField letterField = new TextField();
 		Button submitButton = new Button("Submit Guess");
+		VBox guessLayout = new VBox(10);
+		guessLayout.getChildren().addAll(promptLabel, letterField, submitButton);
+		guessLayout.setAlignment(Pos.CENTER);
 
-		HBox row1 = new HBox(10, letterButtons[0], letterButtons[1], letterButtons[2], letterButtons[3], letterButtons[4], letterButtons[5], letterButtons[6], letterButtons[7], letterButtons[8], letterButtons[9]);
-		HBox row2 = new HBox(10, letterButtons[10], letterButtons[11], letterButtons[12], letterButtons[13], letterButtons[14], letterButtons[15], letterButtons[16], letterButtons[17], letterButtons[18], letterButtons[19]);
-		HBox row3 = new HBox(10, letterButtons[20], letterButtons[21], letterButtons[22], letterButtons[23], letterButtons[24], letterButtons[25]);
-
-		row1.setAlignment(Pos.CENTER);
-		row2.setAlignment(Pos.CENTER);
-		row3.setAlignment(Pos.CENTER);
-
-		VBox keyboardLayout = new VBox(10, row1, row2, row3, submitButton);
-		keyboardLayout.setAlignment(Pos.BOTTOM_CENTER);
-
-
+//		submitButton.setOnAction(event -> handleGuessSubmit(letterField.getText()));
 		submitButton.setOnAction(event -> {
-			for (Button button : letterButtons) {
-				if (button.getText().equals(String.valueOf(selectedLetter))) {
-					button.setDisable(true);
-					break;
-				}
+			String text = letterField.getText();
+
+			// check if the text is exactly one character
+			if (text.length() == 1) {
+				handleGuessSubmit(text.toUpperCase().charAt(0));
+			} else {
+				showAlert("Submission error", "Please enter a single character.");
 			}
-			System.out.println(selectedLetter);
-			handleGuessSubmit(selectedLetter);
-			selectedLetter = '\0';
+			letterField.clear();
 		});
 
-		return new Scene(keyboardLayout, 500, 400);
+		return new Scene(guessLayout, 500, 400);
 	}
+//	private Scene createGameScene() {
+//		Button[] letterButtons = createLetterButtons();
+//		Button submitButton = new Button("Submit Guess");
+//
+//		HBox row1 = new HBox(10, letterButtons[0], letterButtons[1], letterButtons[2], letterButtons[3], letterButtons[4], letterButtons[5], letterButtons[6], letterButtons[7], letterButtons[8], letterButtons[9]);
+//		HBox row2 = new HBox(10, letterButtons[10], letterButtons[11], letterButtons[12], letterButtons[13], letterButtons[14], letterButtons[15], letterButtons[16], letterButtons[17], letterButtons[18], letterButtons[19]);
+//		HBox row3 = new HBox(10, letterButtons[20], letterButtons[21], letterButtons[22], letterButtons[23], letterButtons[24], letterButtons[25]);
+//
+//		row1.setAlignment(Pos.CENTER);
+//		row2.setAlignment(Pos.CENTER);
+//		row3.setAlignment(Pos.CENTER);
+//
+//		VBox keyboardLayout = new VBox(10, row1, row2, row3, submitButton);
+//		keyboardLayout.setAlignment(Pos.BOTTOM_CENTER);
+//
+//
+//		submitButton.setOnAction(event -> {
+//			for (Button button : letterButtons) {
+//				if (button.getText().equals(String.valueOf(selectedLetter))) {
+//					button.setDisable(true);
+//					break;
+//				}
+//			}
+//			System.out.println(selectedLetter);
+//			handleGuessSubmit(selectedLetter);
+//			selectedLetter = '\0';
+//		});
+//
+//		return new Scene(keyboardLayout, 500, 400);
+//	}
 
 	private Button[] createLetterButtons() {
 		Button[] letterButtons = new Button[26];
@@ -212,9 +245,7 @@ public class GuiClient extends Application{
 	}
 
 	private boolean connectToServer(int port) throws InterruptedException {
-		client = new Client(port, data -> {
-			System.out.println("Received data: " + data);
-		});
+		client = new Client(port);
 
 		client.start();
 		Thread.sleep(300);
