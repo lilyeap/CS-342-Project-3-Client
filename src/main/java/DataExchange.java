@@ -35,12 +35,15 @@ public class DataExchange implements Serializable {
     // receive/send methods
     public void sendMessage(ObjectOutputStream out) {
         try {
+            out.reset(); // Reset the stream to clear any internal caches of written objects
             out.writeObject(this);
+            out.flush(); // Flush the stream to ensure all data is sent
         } catch (IOException e) {
             System.out.println("Error sending message: " + e.getMessage());
             // Handle exception
         }
     }
+
     public static DataExchange receiveMessage(ObjectInputStream in) {
         try {
             return (DataExchange) in.readObject();
