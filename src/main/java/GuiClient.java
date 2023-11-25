@@ -132,9 +132,21 @@ public class GuiClient extends Application{
 
 		gameLayout.setAlignment(Pos.CENTER);
 
-		b1.setOnAction(event -> handleCategoryButtonClick("Animals"));
-		b2.setOnAction(event -> handleCategoryButtonClick("U.S. States"));
-		b3.setOnAction(event -> handleCategoryButtonClick("Superheroes"));
+		b1.setOnAction(event -> {
+			handleCategoryButtonClick("Animals");
+			b1.setDisable(true);
+		});
+
+		b2.setOnAction(event -> {
+			handleCategoryButtonClick("U.S. States");
+			b2.setDisable(true);
+		});
+
+		b3.setOnAction(event -> {
+			handleCategoryButtonClick("Superheroes");
+			b3.setDisable(true);
+		});
+
 
 		StackPane centerLayout = new StackPane();
 		centerLayout.getChildren().add(gameLayout);
