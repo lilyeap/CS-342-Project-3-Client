@@ -26,7 +26,7 @@ import java.util.Set;
 
 public class GuiClient extends Application{
 	DataExchange sendData = new DataExchange("none", '0');
-	DataExchange receiveStatus = new DataExchange("none", '0');
+//	DataExchange receiveStatus = new DataExchange("none", '0');
 	private Text remainingGuessesText = new Text("6");
 	private ObjectInputStream inputStream;
 	private ObjectOutputStream outputStream;
@@ -39,7 +39,6 @@ public class GuiClient extends Application{
 	private TextField ipField = new TextField();
 	private Stage primaryStage;
 	private Client client;
-	Set<Integer> indices = new HashSet<>();
 //	char selectedLetter = '\0';
 	
 	public static void main(String[] args) {
@@ -164,10 +163,12 @@ public class GuiClient extends Application{
 //
 //	}
 	private void handleGuessSubmit(char c){
+		// send the character
 		DataExchange sendChar = new DataExchange("none", c);
 		sendChar.sendMessage(outputStream);
 
-		receiveStatus = DataExchange.receiveMessage(inputStream);
+		// receive results
+		DataExchange receiveStatus = DataExchange.receiveMessage(inputStream);
 		assert receiveStatus != null;
 
 //		int remainingGuesses = receiveStatus.getRemainingGuesses();
