@@ -22,6 +22,7 @@ import java.util.Set;
 public class GuiClient extends Application{
 	DataExchange sendData = new DataExchange("none", '0');
 	DataExchange receiveStatus = new DataExchange("none", '0');
+	private Text remainingGuessesText = new Text("6");
 	private ObjectInputStream inputStream;
 	private ObjectOutputStream outputStream;
 
@@ -160,10 +161,16 @@ public class GuiClient extends Application{
 		DataExchange sendChar = new DataExchange("none", c);
 		sendChar.sendMessage(outputStream);
 
+//		receiveStatus = DataExchange.receiveMessage(inputStream);
+//		assert receiveStatus != null;
 		receiveStatus = DataExchange.receiveMessage(inputStream);
 		assert receiveStatus != null;
 
 		int remainingGuesses = receiveStatus.getRemainingGuesses();
+
+		Platform.runLater(() -> {
+			remainingGuessesText.setText(Integer.toString(remainingGuesses));
+		});
 //		char[] knownLtrs = receiveStatus.getUserGuess();
 //		boolean roundEnded = receiveStatus.getRoundEnded();
 	}
@@ -174,9 +181,14 @@ public class GuiClient extends Application{
 		Label guessedLettersLabel = new Label("Guessed Letters: ");
 		guessedLettersLabel.setStyle("-fx-font-weight: bold;");
 
-		// Add a Text node to dynamically update guessed letters
 		Text guessedLettersText = new Text();
 		guessedLettersText.setStyle("-fx-font-size: 14;");
+
+		Label remainingGuessesLabel = new Label("Remaining Guesses: ");
+		remainingGuessesLabel.setStyle("-fx-font-weight: bold;");
+
+//		Text remainingGuessesText = new Text();
+		remainingGuessesText.setStyle("-fx-font-size: 14;");
 
 		List<Character> guessedLetters = new ArrayList<>();
 
@@ -186,9 +198,12 @@ public class GuiClient extends Application{
 				letterField,
 				submitButton,
 				guessedLettersLabel,
-				guessedLettersText
+				guessedLettersText,
+				remainingGuessesLabel,
+				remainingGuessesText
 		);
-		guessLayout.setAlignment(Pos.BOTTOM_CENTER);
+
+		guessLayout.setAlignment(Pos.CENTER);
 
 		submitButton.setOnAction(event -> {
 			String text = letterField.getText();
