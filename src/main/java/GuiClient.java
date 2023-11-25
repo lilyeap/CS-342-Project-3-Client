@@ -183,21 +183,23 @@ public class GuiClient extends Application{
 		DataExchange receiveStatus = DataExchange.receiveMessage(inputStream);
 		assert receiveStatus != null;
 
-//		int remainingGuesses = receiveStatus.getRemainingGuesses();
-//		indices.clear();
-//		indices.addAll(receiveStatus.getIndices());
+		// error checking
+		System.out.println("Indices: " + receiveStatus.getIndices().toString());
+		System.out.println("Remaining Guesses: " + receiveStatus.getRemainingGuesses());
+		System.out.println("Number To Guess: " + receiveStatus.getNumToGuess());
+		System.out.println("User Character received: " + receiveStatus.getChar());
 
-		Platform.runLater(() -> {
-			remainingGuessesText.setText(Integer.toString(receiveStatus.getRemainingGuesses()));
+		// reset remaining guesses text
+		remainingGuessesText.setText(Integer.toString(receiveStatus.getRemainingGuesses()));
 
-			Set<Integer> indices = receiveStatus.getIndices();
-
-			if (indices != null && !indices.isEmpty()) {
-				StringBuilder message = new StringBuilder("Letter " + c + " was found at position(s): ");
-				for (Integer index : indices) {
-					message.append(index + 1).append(", ");
-				}
-				message.delete(message.length() - 2, message.length()); // Remove the trailing comma and space
+		// get the indices of the letter
+		Set<Integer> indices = receiveStatus.getIndices();
+		if (indices != null && !indices.isEmpty()) {
+			StringBuilder message = new StringBuilder("Letter " + c + " was found at position(s): ");
+			for (Integer index : indices) {
+				message.append(index + 1).append(", ");
+			}
+			message.delete(message.length() - 2, message.length()); // Remove the trailing comma and space
 
 				displayMessage(message.toString() + " of the word.");
 			} else {
