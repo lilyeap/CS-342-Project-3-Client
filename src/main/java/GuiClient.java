@@ -1,6 +1,8 @@
 
 import java.io.IOException;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Pos;
@@ -12,10 +14,13 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.scene.control.*;
+import javafx.util.Duration;
+
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -34,7 +39,8 @@ public class GuiClient extends Application{
 	private TextField ipField = new TextField();
 	private Stage primaryStage;
 	private Client client;
-	char selectedLetter = '\0';
+	Set<Integer> indices = new HashSet<>();
+//	char selectedLetter = '\0';
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -161,15 +167,29 @@ public class GuiClient extends Application{
 		DataExchange sendChar = new DataExchange("none", c);
 		sendChar.sendMessage(outputStream);
 
-//		receiveStatus = DataExchange.receiveMessage(inputStream);
-//		assert receiveStatus != null;
 		receiveStatus = DataExchange.receiveMessage(inputStream);
 		assert receiveStatus != null;
 
-		int remainingGuesses = receiveStatus.getRemainingGuesses();
+//		int remainingGuesses = receiveStatus.getRemainingGuesses();
+//		indices.clear();
+//		indices.addAll(receiveStatus.getIndices());
 
 		Platform.runLater(() -> {
-			remainingGuessesText.setText(Integer.toString(remainingGuesses));
+			remainingGuessesText.setText(Integer.toString(receiveStatus.getRemainingGuesses()));
+
+			Set<Integer> indices = receiveStatus.getIndices();
+
+			if (indices != null && !indices.isEmpty()) {
+				StringBuilder message = new StringBuilder("Letter " + c + " was found at position(s): ");
+				for (Integer index : indices) {
+					message.append(index + 1).append(", ");
+				}
+				message.delete(message.length() - 2, message.length()); // Remove the trailing comma and space
+
+				displayMessage(message.toString() + " of the word.");
+			} else {
+				displayMessage("Letter " + c + " was not found in the word.");
+			}
 		});
 //		char[] knownLtrs = receiveStatus.getUserGuess();
 //		boolean roundEnded = receiveStatus.getRoundEnded();
@@ -310,6 +330,23 @@ public class GuiClient extends Application{
 		alert.setHeaderText(null);
 		alert.setContentText(content);
 		alert.showAndWait();
+	}
+	private void displayMessage(String message) {
+		Platform.runLater(() -> {
+			Alert alert = new Alert(Alert.AlertType.INFORMATION);
+			alert.setTitle("Guess Result");
+			alert.setHeaderText(null);
+			alert.setContentText(message);
+
+			Timeline timeline = new Timeline(new KeyFrame(
+					Duration.seconds(2),
+					event -> alert.close()
+			));
+			timeline.setCycleCount(1);
+			timeline.play();
+
+			alert.showAndWait();
+		});
 	}
 
 
