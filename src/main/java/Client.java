@@ -17,8 +17,9 @@ public class Client extends Thread{
 	boolean roundResult;
 	Consumer<Serializable> callback;
 
-	Client(int serverPort){
+	Client(int serverPort, Consumer<Serializable> call){
 		port = serverPort;
+		callback = call;
 	}
 
 	public void run() {

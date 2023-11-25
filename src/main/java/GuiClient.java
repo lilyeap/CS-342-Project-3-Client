@@ -9,16 +9,18 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.scene.control.*;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class GuiClient extends Application{
 	DataExchange sendData = new DataExchange("none", '0');
-
 	DataExchange receiveStatus = new DataExchange("none", '0');
 	private ObjectInputStream inputStream;
 	private ObjectOutputStream outputStream;
@@ -169,20 +171,46 @@ public class GuiClient extends Application{
 		Label promptLabel = new Label("Enter a letter to guess:");
 		TextField letterField = new TextField();
 		Button submitButton = new Button("Submit Guess");
-		VBox guessLayout = new VBox(10);
-		guessLayout.getChildren().addAll(promptLabel, letterField, submitButton);
-		guessLayout.setAlignment(Pos.CENTER);
+		Label guessedLettersLabel = new Label("Guessed Letters: ");
+		guessedLettersLabel.setStyle("-fx-font-weight: bold;");
 
-//		submitButton.setOnAction(event -> handleGuessSubmit(letterField.getText()));
+		// Add a Text node to dynamically update guessed letters
+		Text guessedLettersText = new Text();
+		guessedLettersText.setStyle("-fx-font-size: 14;");
+
+		List<Character> guessedLetters = new ArrayList<>();
+
+		VBox guessLayout = new VBox(10);
+		guessLayout.getChildren().addAll(
+				promptLabel,
+				letterField,
+				submitButton,
+				guessedLettersLabel,
+				guessedLettersText
+		);
+		guessLayout.setAlignment(Pos.BOTTOM_CENTER);
+
 		submitButton.setOnAction(event -> {
 			String text = letterField.getText();
 
 			// check if the text is exactly one character
-			if (text.length() == 1) {
-				handleGuessSubmit(text.toUpperCase().charAt(0));
+			if (text.length() == 1 && text.matches("^[a-zA-Z]$")) {
+				if (guessedLetters.contains(text.toUpperCase().charAt(0))) {
+					showAlert("Invalid guess", "You've already guessed the letter " + text.toUpperCase().charAt(0));
+					letterField.clear();
+					return;
+				}
+
+				guessedLettersText.setText(guessedLettersText.getText() + " " + text.toUpperCase().charAt(0));
+				guessedLetters.add(text.toUpperCase().charAt(0));
+
+				new Thread(() -> {
+					handleGuessSubmit(text.toUpperCase().charAt(0));
+				}).start();
 			} else {
-				showAlert("Submission error", "Please enter a single character.");
+				showAlert("Submission error", "Please enter a valid single letter.");
 			}
+
 			letterField.clear();
 		});
 
@@ -219,22 +247,22 @@ public class GuiClient extends Application{
 //		return new Scene(keyboardLayout, 500, 400);
 //	}
 
-	private Button[] createLetterButtons() {
-		Button[] letterButtons = new Button[26];
-		for (int i = 0; i < 26; i++) {
-			char letter = (char) ('A' + i);
-			letterButtons[i] = new Button(String.valueOf(letter));
-
-			letterButtons[i].setOnAction(event -> {
-				selectedLetter = letter;
-				for (Button button : letterButtons) {
-					button.setStyle("");
-				}
-				((Button) event.getSource()).setStyle("-fx-background-color: lightgray");
-			});
-		}
-		return letterButtons;
-	}
+//	private Button[] createLetterButtons() {
+//		Button[] letterButtons = new Button[26];
+//		for (int i = 0; i < 26; i++) {
+//			char letter = (char) ('A' + i);
+//			letterButtons[i] = new Button(String.valueOf(letter));
+//
+//			letterButtons[i].setOnAction(event -> {
+//				selectedLetter = letter;
+//				for (Button button : letterButtons) {
+//					button.setStyle("");
+//				}
+//				((Button) event.getSource()).setStyle("-fx-background-color: lightgray");
+//			});
+//		}
+//		return letterButtons;
+//	}
 
 	private void handleCategoryButtonClick(String selectedCategory) {
 		// send message to server
@@ -245,10 +273,12 @@ public class GuiClient extends Application{
 	}
 
 	private boolean connectToServer(int port) throws InterruptedException {
-		client = new Client(port);
+		client = new Client(port, data -> {
+			System.out.println("Received data: " + data);
+		});
 
 		client.start();
-		Thread.sleep(300);
+		Thread.sleep(50);
 
 		if (client.isConnected()) {
 			outputStream = client.getOut();
