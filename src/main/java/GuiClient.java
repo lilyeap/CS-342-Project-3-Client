@@ -155,25 +155,6 @@ public class GuiClient extends Application{
 		return new Scene(centerLayout, 500, 400);
 	}
 
-
-//	private void handleGuessSubmit(char c) {
-//		sendData.setCharacter(c);
-//		System.out.println(c + " from inside handle guess1");
-//		sendData.sendMessage(outputStream);
-//
-//		// process guess from server
-//		receiveStatus = DataExchange.receiveMessage(inputStream);
-//		assert receiveStatus != null;
-//
-//		boolean isLetterFound = receiveStatus.isLetterFound(); // is letter found or not
-//		int remainingGuesses = receiveStatus.getRemainingGuesses(); // user's guesses left
-//		int numToGuess = receiveStatus.getNumToGuess(); // total letters in the word to guess
-//		int numGuessed = receiveStatus.getNumGuessed(); // letters that are correctly guessed
-//		Set<Integer> indices = receiveStatus.getIndices(); // indices of that letter in the string
-//
-//		System.out.println("received status");
-//
-//	}
 	private void handleGuessSubmit(char c){
 		// send the character
 		DataExchange sendChar = new DataExchange("none", c);
@@ -201,13 +182,28 @@ public class GuiClient extends Application{
 			}
 			message.delete(message.length() - 2, message.length()); // Remove the trailing comma and space
 
-				displayMessage(message.toString() + " of the word.");
-			} else {
-				displayMessage("Letter " + c + " was not found in the word.");
-			}
-		});
-//		char[] knownLtrs = receiveStatus.getUserGuess();
-//		boolean roundEnded = receiveStatus.getRoundEnded();
+			displayMessage(message.toString() + " of the word.");
+		} else {
+			displayMessage("Letter " + c + " was not found in the word.");
+		}
+
+		// check if the user won
+		int lettersLeftToGuess = receiveStatus.getNumToGuess();
+		if (lettersLeftToGuess == 0){
+			Platform.runLater(() -> {
+				// insert win message?
+				primaryStage.setScene(createCategoryScene());
+			});
+		}
+
+		// check if the user lost
+		int remainingGuesses = receiveStatus.getRemainingGuesses();
+		if (lettersLeftToGuess == 0){
+			Platform.runLater(() -> {
+				// insert loss message?
+				primaryStage.setScene(createCategoryScene());
+			});
+		}
 	}
 	private Scene createGameScene() {
 		Label promptLabel = new Label("Enter a letter to guess:");
