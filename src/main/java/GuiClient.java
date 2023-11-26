@@ -19,10 +19,7 @@ import javafx.util.Duration;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class GuiClient extends Application{
 	DataExchange sendData = new DataExchange("none", '0');
@@ -133,7 +130,7 @@ public class GuiClient extends Application{
 		}
 		return true;
 	}
-	private boolean didGameEnd() {
+	private boolean didGameEnd(String winLoss) {
 		if (areAllButtonsDisabled(b1, b2, b3)) {
 			primaryStage.setScene(createPlayAgainScene());
 			return true;
@@ -172,7 +169,7 @@ public class GuiClient extends Application{
 
 	private void testingPurposes(){
 		b1.setDisable(true);
-		b2.setDisable(true);
+//		b2.setDisable(true);
 	}
 
 	private Scene createCategoryScene() {
@@ -257,10 +254,13 @@ public class GuiClient extends Application{
 		int lettersLeftToGuess = receiveStatus.getNumToGuess();
 		if (lettersLeftToGuess == 0){
 			Platform.runLater(() -> {
-				// insert win message?
-				if (!didGameEnd()){
-					primaryStage.setScene(createCategoryScene());
-				}
+				String lossMessage = "Congratulations! You've guessed the word!";;
+				Runnable sceneChange = () -> {
+					if (!didGameEnd("WIN")){
+						primaryStage.setScene(createCategoryScene());
+					}
+				};
+				showMessageAndWait(lossMessage, sceneChange);
 			});
 		}
 
@@ -268,10 +268,13 @@ public class GuiClient extends Application{
 		int remainingGuesses = receiveStatus.getRemainingGuesses();
 		if (remainingGuesses == 0){
 			Platform.runLater(() -> {
-				// insert loss message?
-				if (!didGameEnd()){
-					primaryStage.setScene(createCategoryScene());
-				}
+				String lossMessage = "Sorry! You've run out of guesses.";
+				Runnable sceneChange = () -> {
+					if (!didGameEnd("LOSS")){
+						primaryStage.setScene(createCategoryScene());
+					}
+				};
+				showMessageAndWait(lossMessage, sceneChange);
 			});
 		}
 	}
@@ -282,7 +285,7 @@ public class GuiClient extends Application{
 			initialWordState.append("_ ");
 		}
 
-		// Remove the trailing space
+		// remove the trailing space
 		initialWordState.deleteCharAt(initialWordState.length() - 1);
 		wordStateText.setText(initialWordState.toString());
 		System.out.println(wordStateText.getText());
@@ -290,6 +293,7 @@ public class GuiClient extends Application{
 
 
 	private Scene createGameScene() {
+		// set up screen
 		Label promptLabel = new Label("Enter a letter to guess:");
 		TextField letterField = new TextField();
 		Button submitButton = new Button("Submit Guess");
@@ -313,6 +317,7 @@ public class GuiClient extends Application{
 		System.out.println(receiveStatus.getNumToGuess());
 		initializeWordState(receiveStatus.getNumToGuess());
 
+		// add them to the screen
 		VBox guessLayout = new VBox(10);
 		guessLayout.getChildren().addAll(
 				wordStateText,
@@ -326,6 +331,8 @@ public class GuiClient extends Application{
 		);
 
 		guessLayout.setAlignment(Pos.CENTER);
+
+		// when user presses submit
 		submitButton.setOnAction(event -> {
 			String text = letterField.getText();
 
@@ -394,10 +401,31 @@ public class GuiClient extends Application{
 			alert.setContentText(message);
 
 			Timeline timeline = new Timeline(new KeyFrame(
-					Duration.seconds(2),
+					Duration.seconds(3),
 					event -> alert.close()
 			));
 			timeline.setCycleCount(1);
+			timeline.play();
+
+			alert.showAndWait();
+		});
+	}
+
+	private void showMessageAndWait(String message, Runnable postDisplayAction) {
+		Platform.runLater(() -> {
+			Alert alert = new Alert(Alert.AlertType.INFORMATION);
+			alert.setTitle("Guess Result");
+			alert.setHeaderText(null);
+			alert.setContentText(message);
+
+			Timeline timeline = new Timeline(new KeyFrame(
+					Duration.seconds(4),
+					ae -> alert.close()));
+			timeline.setOnFinished(event -> {
+				if (postDisplayAction != null) {
+					postDisplayAction.run();
+				}
+			});
 			timeline.play();
 
 			alert.showAndWait();
