@@ -10,6 +10,7 @@ public class DataExchange implements Serializable {
     // receive from the client
     private String category;
     private char character;
+    private String playOrQuit;
 
     // send to the client
     private boolean letterFound;
@@ -30,6 +31,10 @@ public class DataExchange implements Serializable {
         this.numToGuess = numToGuess;
         this.numGuessed = numGuessed;
         this.indices = indices;
+    }
+
+    public DataExchange(String playOrQuit){
+        this.playOrQuit = playOrQuit;
     }
 
     // receive/send methods
@@ -60,6 +65,7 @@ public class DataExchange implements Serializable {
     }
 
     public char getChar() { return character; }
+    public String getPlayOrQuit() { return playOrQuit; }
 
     // getters for the client
     public boolean isLetterFound(){ return letterFound; }
@@ -89,6 +95,8 @@ public class DataExchange implements Serializable {
     public void setNumGuessed(int numGuessed) {this.numGuessed = numGuessed;}
 
     public void setIndices(Set<Integer> indices) {this.indices = indices;}
+    public void setPlayOrQuit(String playOrQuit){ this.playOrQuit = playOrQuit; }
+
 
 
 
