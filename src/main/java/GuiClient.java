@@ -169,7 +169,7 @@ public class GuiClient extends Application{
 
 	private void testingPurposes(){
 		b1.setDisable(true);
-//		b2.setDisable(true);
+		b2.setDisable(true);
 	}
 
 	private Scene createCategoryScene() {
@@ -182,7 +182,7 @@ public class GuiClient extends Application{
 		gameLayout.setAlignment(Pos.CENTER);
 
 		// for easy debugging
-		testingPurposes();
+//		testingPurposes();
 
 		b1.setOnAction(event -> {
 			b1.setDisable(true);
