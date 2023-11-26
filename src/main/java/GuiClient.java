@@ -124,7 +124,58 @@ public class GuiClient extends Application{
 		return new Scene(introLayout, 600, 400);
 	}
 
+	private boolean areAllButtonsDisabled(Button... buttons) {
+		for (Button button : buttons) {
+			if (!button.isDisabled()) {
+				return false;
+			}
+		}
+		return true;
+	}
+	private boolean didGameEnd() {
+		if (areAllButtonsDisabled(b1, b2, b3)) {
+			primaryStage.setScene(createPlayAgainScene());
+			return true;
+		}
+		return false;
+	}
+
+	private void sendSignal(String signal) {
+		DataExchange sendData = new DataExchange(signal); // Use the appropriate constructor
+		sendData.sendMessage(outputStream); // Send the DataExchange object
+	}
+
+	private Scene createPlayAgainScene() {
+		Label questionLabel = new Label("Do you want to play again?");
+		Button playAgainButton = new Button("Play Again");
+		Button quitButton = new Button("Quit");
+
+		playAgainButton.setOnAction(e -> {
+			b1.setDisable(false);
+			b2.setDisable(false);
+			b3.setDisable(false);
+			sendSignal("PLAY_AGAIN");
+			primaryStage.setScene(createCategoryScene());
+		});
+
+		quitButton.setOnAction(e -> {
+			sendSignal("QUIT");
+			Platform.exit();
+		});
+
+		VBox layout = new VBox(10, questionLabel, playAgainButton, quitButton);
+		layout.setAlignment(Pos.CENTER);
+
+		return new Scene(layout, 300, 200);
+	}
+
+	private void testingPurposes(){
+		b1.setDisable(true);
+		b2.setDisable(true);
+	}
+
 	private Scene createCategoryScene() {
+
 		Label categoryLabel = new Label("Select Category:");
 
 		VBox gameLayout = new VBox(10);
@@ -132,19 +183,22 @@ public class GuiClient extends Application{
 
 		gameLayout.setAlignment(Pos.CENTER);
 
+		// for easy debugging
+		testingPurposes();
+
 		b1.setOnAction(event -> {
-			handleCategoryButtonClick("Animals");
 			b1.setDisable(true);
+			handleCategoryButtonClick("Animals");
 		});
 
 		b2.setOnAction(event -> {
-			handleCategoryButtonClick("U.S. States");
 			b2.setDisable(true);
+			handleCategoryButtonClick("U.S. States");
 		});
 
 		b3.setOnAction(event -> {
-			handleCategoryButtonClick("Superheroes");
 			b3.setDisable(true);
+			handleCategoryButtonClick("Superheroes");
 		});
 
 
@@ -192,16 +246,20 @@ public class GuiClient extends Application{
 		if (lettersLeftToGuess == 0){
 			Platform.runLater(() -> {
 				// insert win message?
-				primaryStage.setScene(createCategoryScene());
+				if (!didGameEnd()){
+					primaryStage.setScene(createCategoryScene());
+				}
 			});
 		}
 
 		// check if the user lost
 		int remainingGuesses = receiveStatus.getRemainingGuesses();
-		if (lettersLeftToGuess == 0){
+		if (remainingGuesses == 0){
 			Platform.runLater(() -> {
 				// insert loss message?
-				primaryStage.setScene(createCategoryScene());
+				if (!didGameEnd()){
+					primaryStage.setScene(createCategoryScene());
+				}
 			});
 		}
 	}
