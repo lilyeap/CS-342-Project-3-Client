@@ -38,6 +38,7 @@ public class GuiClient extends Application{
 	private TextField ipField = new TextField();
 	private Stage primaryStage;
 	private Client client;
+	private Map<String, Integer> categoryRetries = new HashMap<>();
 
 	public static void main(String[] args) {
 		launch(args);
@@ -153,6 +154,7 @@ public class GuiClient extends Application{
 			b2.setDisable(false);
 			b3.setDisable(false);
 			sendSignal("PLAY_AGAIN");
+//			categoryRetries.clear();
 			primaryStage.setScene(createCategoryScene());
 		});
 
@@ -185,17 +187,17 @@ public class GuiClient extends Application{
 //		testingPurposes();
 
 		b1.setOnAction(event -> {
-			b1.setDisable(true);
+//			b1.setDisable(true);
 			handleCategoryButtonClick("Animals");
 		});
 
 		b2.setOnAction(event -> {
-			b2.setDisable(true);
+//			b2.setDisable(true);
 			handleCategoryButtonClick("U.S. States");
 		});
 
 		b3.setOnAction(event -> {
-			b3.setDisable(true);
+//			b3.setDisable(true);
 			handleCategoryButtonClick("Superheroes");
 		});
 
@@ -216,6 +218,48 @@ public class GuiClient extends Application{
 		System.out.println(wordStateText.getText());
 	}
 
+	private boolean canRetryCategories() {
+		for (Map.Entry<String, Integer> entry : categoryRetries.entrySet()) {
+			if (entry.getValue() <= 2) {
+				return true; // Player can retry this category
+			}
+		}
+		return false; // Player has exhausted retries for all categories
+	}
+
+	private void disableButtonsForExhaustedCategories() {
+		for (Map.Entry<String, Integer> entry : categoryRetries.entrySet()) {
+			if (entry.getValue() >= 2) {
+				// Disable the button for the category if the player has exhausted retries
+				switch (entry.getKey()) {
+					case "Animals":
+						b1.setDisable(true);
+						break;
+					case "U.S. States":
+						b2.setDisable(true);
+						break;
+					case "Superheroes":
+						b3.setDisable(true);
+						break;
+				}
+			}
+		}
+	}
+
+	private void disableButtonsForExhaustedCategoriesW(String category) {
+		switch (category) {
+			case "Animals":
+				b1.setDisable(true);
+				break;
+			case "U.S. States":
+				b2.setDisable(true);
+				break;
+			case "Superheroes":
+				b3.setDisable(true);
+				break;
+		}
+	}
+
 
 	private void handleGuessSubmit(char c){
 		// send the character
@@ -231,6 +275,7 @@ public class GuiClient extends Application{
 		System.out.println("Remaining Guesses: " + receiveStatus.getRemainingGuesses());
 		System.out.println("Number To Guess: " + receiveStatus.getNumToGuess());
 		System.out.println("User Character received: " + receiveStatus.getChar());
+//		System.out.println("Disabling buttons for category: " + sendData.getCategory());
 
 		// reset remaining guesses text
 		remainingGuessesText.setText(Integer.toString(receiveStatus.getRemainingGuesses()));
@@ -254,9 +299,12 @@ public class GuiClient extends Application{
 		int lettersLeftToGuess = receiveStatus.getNumToGuess();
 		if (lettersLeftToGuess == 0){
 			Platform.runLater(() -> {
-				String lossMessage = "Congratulations! You've guessed the word!";;
+				String lossMessage = "Congratulations! You've guessed the word!";
 				Runnable sceneChange = () -> {
 					if (!didGameEnd("WIN")){
+//						sendData.setGameResult(sendData.getGameResult() + 1);
+//						sendData.sendMessage(outputStream);
+						disableButtonsForExhaustedCategoriesW(sendData.getCategory());
 						primaryStage.setScene(createCategoryScene());
 					}
 				};
@@ -271,10 +319,17 @@ public class GuiClient extends Application{
 				String lossMessage = "Sorry! You've run out of guesses.";
 				Runnable sceneChange = () -> {
 					if (!didGameEnd("LOSS")){
-						primaryStage.setScene(createCategoryScene());
+						categoryRetries.put(sendData.getCategory(), categoryRetries.getOrDefault(sendData.getCategory(), 0) + 1);
+						if (!canRetryCategories()) {
+							disableButtonsForExhaustedCategories();
+							primaryStage.setScene(createCategoryScene());
+						}else {
+							primaryStage.setScene(createCategoryScene());
+						}
 					}
 				};
 				showMessageAndWait(lossMessage, sceneChange);
+
 			});
 		}
 	}
@@ -431,11 +486,4 @@ public class GuiClient extends Application{
 			alert.showAndWait();
 		});
 	}
-
-
-
-
-
-
-
 }
