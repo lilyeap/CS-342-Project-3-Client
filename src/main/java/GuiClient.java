@@ -26,8 +26,10 @@ import java.util.Set;
 
 public class GuiClient extends Application{
 	DataExchange sendData = new DataExchange("none", '0');
-//	DataExchange receiveStatus = new DataExchange("none", '0');
+	DataExchange receiveStatus = new DataExchange("none", '0');
+
 	private Text remainingGuessesText = new Text("6");
+	private Text wordStateText = new Text();
 	private ObjectInputStream inputStream;
 	private ObjectOutputStream outputStream;
 
@@ -39,8 +41,7 @@ public class GuiClient extends Application{
 	private TextField ipField = new TextField();
 	private Stage primaryStage;
 	private Client client;
-//	char selectedLetter = '\0';
-	
+
 	public static void main(String[] args) {
 		launch(args);
 	}
@@ -209,13 +210,23 @@ public class GuiClient extends Application{
 		return new Scene(centerLayout, 500, 400);
 	}
 
+	private void updateWordState(char guessedLetter, Set<Integer> indices) {
+		StringBuilder currentWordState = new StringBuilder(wordStateText.getText());
+		for (Integer index : indices) {
+			currentWordState.setCharAt(index * 2, guessedLetter); // Update at index considering spaces
+		}
+		wordStateText.setText(currentWordState.toString());
+		System.out.println(wordStateText.getText());
+	}
+
+
 	private void handleGuessSubmit(char c){
 		// send the character
 		DataExchange sendChar = new DataExchange("none", c);
 		sendChar.sendMessage(outputStream);
 
 		// receive results
-		DataExchange receiveStatus = DataExchange.receiveMessage(inputStream);
+		receiveStatus = DataExchange.receiveMessage(inputStream);
 		assert receiveStatus != null;
 
 		// error checking
@@ -230,6 +241,7 @@ public class GuiClient extends Application{
 		// get the indices of the letter
 		Set<Integer> indices = receiveStatus.getIndices();
 		if (indices != null && !indices.isEmpty()) {
+			updateWordState(c, indices);
 			StringBuilder message = new StringBuilder("Letter " + c + " was found at position(s): ");
 			for (Integer index : indices) {
 				message.append(index + 1).append(", ");
@@ -263,6 +275,20 @@ public class GuiClient extends Application{
 			});
 		}
 	}
+
+	private void initializeWordState(int wordLength) {
+		StringBuilder initialWordState = new StringBuilder();
+		for (int i = 0; i < wordLength; i++) {
+			initialWordState.append("_ ");
+		}
+
+		// Remove the trailing space
+		initialWordState.deleteCharAt(initialWordState.length() - 1);
+		wordStateText.setText(initialWordState.toString());
+		System.out.println(wordStateText.getText());
+	}
+
+
 	private Scene createGameScene() {
 		Label promptLabel = new Label("Enter a letter to guess:");
 		TextField letterField = new TextField();
@@ -276,13 +302,20 @@ public class GuiClient extends Application{
 		Label remainingGuessesLabel = new Label("Remaining Guesses: ");
 		remainingGuessesLabel.setStyle("-fx-font-weight: bold;");
 
-//		Text remainingGuessesText = new Text();
+		remainingGuessesText.setText("6");
 		remainingGuessesText.setStyle("-fx-font-size: 14;");
 
 		List<Character> guessedLetters = new ArrayList<>();
 
+		// receive the number of letters
+		receiveStatus = DataExchange.receiveMessage(inputStream);
+		assert receiveStatus != null;
+		System.out.println(receiveStatus.getNumToGuess());
+		initializeWordState(receiveStatus.getNumToGuess());
+
 		VBox guessLayout = new VBox(10);
 		guessLayout.getChildren().addAll(
+				wordStateText,
 				promptLabel,
 				letterField,
 				submitButton,
@@ -293,7 +326,6 @@ public class GuiClient extends Application{
 		);
 
 		guessLayout.setAlignment(Pos.CENTER);
-
 		submitButton.setOnAction(event -> {
 			String text = letterField.getText();
 
@@ -320,53 +352,7 @@ public class GuiClient extends Application{
 
 		return new Scene(guessLayout, 500, 400);
 	}
-//	private Scene createGameScene() {
-//		Button[] letterButtons = createLetterButtons();
-//		Button submitButton = new Button("Submit Guess");
-//
-//		HBox row1 = new HBox(10, letterButtons[0], letterButtons[1], letterButtons[2], letterButtons[3], letterButtons[4], letterButtons[5], letterButtons[6], letterButtons[7], letterButtons[8], letterButtons[9]);
-//		HBox row2 = new HBox(10, letterButtons[10], letterButtons[11], letterButtons[12], letterButtons[13], letterButtons[14], letterButtons[15], letterButtons[16], letterButtons[17], letterButtons[18], letterButtons[19]);
-//		HBox row3 = new HBox(10, letterButtons[20], letterButtons[21], letterButtons[22], letterButtons[23], letterButtons[24], letterButtons[25]);
-//
-//		row1.setAlignment(Pos.CENTER);
-//		row2.setAlignment(Pos.CENTER);
-//		row3.setAlignment(Pos.CENTER);
-//
-//		VBox keyboardLayout = new VBox(10, row1, row2, row3, submitButton);
-//		keyboardLayout.setAlignment(Pos.BOTTOM_CENTER);
-//
-//
-//		submitButton.setOnAction(event -> {
-//			for (Button button : letterButtons) {
-//				if (button.getText().equals(String.valueOf(selectedLetter))) {
-//					button.setDisable(true);
-//					break;
-//				}
-//			}
-//			System.out.println(selectedLetter);
-//			handleGuessSubmit(selectedLetter);
-//			selectedLetter = '\0';
-//		});
-//
-//		return new Scene(keyboardLayout, 500, 400);
-//	}
 
-//	private Button[] createLetterButtons() {
-//		Button[] letterButtons = new Button[26];
-//		for (int i = 0; i < 26; i++) {
-//			char letter = (char) ('A' + i);
-//			letterButtons[i] = new Button(String.valueOf(letter));
-//
-//			letterButtons[i].setOnAction(event -> {
-//				selectedLetter = letter;
-//				for (Button button : letterButtons) {
-//					button.setStyle("");
-//				}
-//				((Button) event.getSource()).setStyle("-fx-background-color: lightgray");
-//			});
-//		}
-//		return letterButtons;
-//	}
 
 	private void handleCategoryButtonClick(String selectedCategory) {
 		// send message to server
