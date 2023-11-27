@@ -42,6 +42,7 @@ public class GuiClient extends Application{
 	int lostAni = 0;
 	int lostUS = 0;
 	int lostSuper = 0;
+	int consecLoss = 0;
 
 	public static void main(String[] args) {
 		launch(args);
@@ -170,6 +171,7 @@ public class GuiClient extends Application{
 				lostAni = 0;
 				lostUS = 0;
 				lostSuper = 0;
+				consecLoss = 0;
 				sendSignal("PLAY_AGAIN");
 				primaryStage.setScene(createCategoryScene());
 			});
@@ -195,7 +197,7 @@ public class GuiClient extends Application{
 
 		if(didGameEnd()){
 			Platform.runLater(() -> primaryStage.setScene(createPlayAgainScene("Won")));
-		}else if (lostAni == 3 || lostUS == 3 || lostSuper == 3){
+		}else if (lostAni == 3 || lostUS == 3 || lostSuper == 3 || consecLoss == 3){
 			Platform.runLater(() -> primaryStage.setScene(createPlayAgainScene("Lost")));
 		}
 
@@ -343,6 +345,7 @@ public class GuiClient extends Application{
 				String lossMessage = "Sorry! You've run out of guesses.";
 				Runnable sceneChange = () -> {
 					if (!didGameEnd("LOSS")){
+						consecLoss += 1;
 						categoryRetries.put(sendData.getCategory(), categoryRetries.getOrDefault(sendData.getCategory(), 0) + 1);
 						if (!canRetryCategories()) {
 							disableButtonsForExhaustedCategories();
