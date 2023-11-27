@@ -39,6 +39,9 @@ public class GuiClient extends Application{
 	private Stage primaryStage;
 	private Client client;
 	private Map<String, Integer> categoryRetries = new HashMap<>();
+	int lostAni = 0;
+	int lostUS = 0;
+	int lostSuper = 0;
 
 	public static void main(String[] args) {
 		launch(args);
@@ -133,7 +136,16 @@ public class GuiClient extends Application{
 	}
 	private boolean didGameEnd(String winLoss) {
 		if (areAllButtonsDisabled(b1, b2, b3)) {
-			primaryStage.setScene(createPlayAgainScene());
+//			Platform.runLater(() -> primaryStage.setScene(createPlayAgainScene()));
+			return true;
+		}
+		return false;
+	}
+
+	private boolean didGameEnd() {
+		if (areAllButtonsDisabled(b1, b2, b3)) {
+//			System.out.println("All buttons are disabled. Changing to Play Again Scene.");
+//			Platform.runLater(() -> primaryStage.setScene(createPlayAgainScene()));
 			return true;
 		}
 		return false;
@@ -144,18 +156,23 @@ public class GuiClient extends Application{
 		sendData.sendMessage(outputStream); // Send the DataExchange object
 	}
 
-	private Scene createPlayAgainScene() {
-		Label questionLabel = new Label("Do you want to play again?");
+	private Scene createPlayAgainScene(String winLoss) {
+		Label questionLabel = new Label("You "+ winLoss + "... Do you want to play again?");
 		Button playAgainButton = new Button("Play Again");
 		Button quitButton = new Button("Quit");
 
 		playAgainButton.setOnAction(e -> {
-			b1.setDisable(false);
-			b2.setDisable(false);
-			b3.setDisable(false);
-			sendSignal("PLAY_AGAIN");
-//			categoryRetries.clear();
-			primaryStage.setScene(createCategoryScene());
+			Platform.runLater(() -> {
+				b1.setDisable(false);
+				b2.setDisable(false);
+				b3.setDisable(false);
+				categoryRetries.clear();
+				lostAni = 0;
+				lostUS = 0;
+				lostSuper = 0;
+				sendSignal("PLAY_AGAIN");
+				primaryStage.setScene(createCategoryScene());
+			});
 		});
 
 		quitButton.setOnAction(e -> {
@@ -175,6 +192,12 @@ public class GuiClient extends Application{
 	}
 
 	private Scene createCategoryScene() {
+
+		if(didGameEnd()){
+			Platform.runLater(() -> primaryStage.setScene(createPlayAgainScene("Won")));
+		}else if (lostAni == 3 || lostUS == 3 || lostSuper == 3){
+			Platform.runLater(() -> primaryStage.setScene(createPlayAgainScene("Lost")));
+		}
 
 		Label categoryLabel = new Label("Select Category:");
 
@@ -234,12 +257,15 @@ public class GuiClient extends Application{
 				switch (entry.getKey()) {
 					case "Animals":
 						b1.setDisable(true);
+						lostAni += 3;
 						break;
 					case "U.S. States":
 						b2.setDisable(true);
+						lostUS += 3;
 						break;
 					case "Superheroes":
 						b3.setDisable(true);
+						lostSuper += 3;
 						break;
 				}
 			}
@@ -302,8 +328,6 @@ public class GuiClient extends Application{
 				String lossMessage = "Congratulations! You've guessed the word!";
 				Runnable sceneChange = () -> {
 					if (!didGameEnd("WIN")){
-//						sendData.setGameResult(sendData.getGameResult() + 1);
-//						sendData.sendMessage(outputStream);
 						disableButtonsForExhaustedCategoriesW(sendData.getCategory());
 						primaryStage.setScene(createCategoryScene());
 					}
@@ -345,8 +369,6 @@ public class GuiClient extends Application{
 		wordStateText.setText(initialWordState.toString());
 		System.out.println(wordStateText.getText());
 	}
-
-
 	private Scene createGameScene() {
 		// set up screen
 		Label promptLabel = new Label("Enter a letter to guess:");
@@ -414,8 +436,6 @@ public class GuiClient extends Application{
 
 		return new Scene(guessLayout, 500, 400);
 	}
-
-
 	private void handleCategoryButtonClick(String selectedCategory) {
 		// send message to server
 		sendData.setCategory(selectedCategory);
@@ -423,7 +443,6 @@ public class GuiClient extends Application{
 
 		primaryStage.setScene(createGameScene());
 	}
-
 	private boolean connectToServer(int port) throws InterruptedException {
 		client = new Client(port, data -> {
 			System.out.println("Received data: " + data);
@@ -440,7 +459,6 @@ public class GuiClient extends Application{
 			return false;
 		}
 	}
-
 	private void showAlert(String title, String content) {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.setTitle(title);
@@ -465,7 +483,6 @@ public class GuiClient extends Application{
 			alert.showAndWait();
 		});
 	}
-
 	private void showMessageAndWait(String message, Runnable postDisplayAction) {
 		Platform.runLater(() -> {
 			Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -474,7 +491,7 @@ public class GuiClient extends Application{
 			alert.setContentText(message);
 
 			Timeline timeline = new Timeline(new KeyFrame(
-					Duration.seconds(4),
+					Duration.seconds(3),
 					ae -> alert.close()));
 			timeline.setOnFinished(event -> {
 				if (postDisplayAction != null) {
