@@ -18,7 +18,6 @@ public class DataExchange implements Serializable {
     private int numToGuess;
     private int numGuessed;
     private Set<Integer> indices;
-//    private int gameWins;
 
 
     public DataExchange(String category, char character) {
@@ -105,13 +104,5 @@ public class DataExchange implements Serializable {
     public void setCharacter(char character) {
         this.character = character;
     }
-
-//    public int getGameResult() {
-//        return gameWins;
-//    }
-//
-//    public void setGameResult(int gameResult) {
-//        this.gameWins = gameResult;
-//    }
 
 }
