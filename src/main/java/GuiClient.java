@@ -91,7 +91,7 @@ public class GuiClient extends Application{
 	private Scene createIntroScene() {
 		Label welcomeLabel = new Label("Welcome to the Word Guessing Game!");
 		welcomeLabel.setAlignment(Pos.TOP_CENTER);
-		welcomeLabel.setStyle("-fx-font-size: 18;"); // Set the font size
+		welcomeLabel.setStyle("-fx-font-size: 18; -fx-font-weight: bold;");
 
 		Label instructionsLabel = new Label("Instructions:\n" +
 				"Your goal is to guess 3 different words in 3 different categories to win!\n" +
@@ -106,11 +106,18 @@ public class GuiClient extends Application{
 				"If you do not make a correct guess within three attempts, the game is over.\n" +
 				"The game is won when you successfully guess one word in each category.\n" +
 				"When the game is over, you can either play again or quit.\n");
-
 		instructionsLabel.setAlignment(Pos.CENTER);
+		instructionsLabel.setWrapText(true);
 
 		Button startPlayButton = new Button("Start Play");
+		startPlayButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-border-radius: 5;");
+		startPlayButton.setOnMouseEntered(e -> startPlayButton.setStyle("-fx-background-color: #45a049; -fx-text-fill: white; -fx-border-radius: 5;"));
+		startPlayButton.setOnMouseExited(e -> startPlayButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-border-radius: 5;"));
+
 		Button exitButton = new Button("Exit Game");
+		exitButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-border-radius: 5;");
+		exitButton.setOnMouseEntered(e -> exitButton.setStyle("-fx-background-color: #e53935; -fx-text-fill: white; -fx-border-radius: 5;"));
+		exitButton.setOnMouseExited(e -> exitButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-border-radius: 5;"));
 
 		// Set the action for the "Start Play" button
 		startPlayButton.setOnAction(event -> {
@@ -127,6 +134,7 @@ public class GuiClient extends Application{
 		return new Scene(introLayout, 600, 400);
 	}
 
+	// checks if all buttons are disabled
 	private boolean areAllButtonsDisabled(Button... buttons) {
 		for (Button button : buttons) {
 			if (!button.isDisabled()) {
@@ -135,33 +143,34 @@ public class GuiClient extends Application{
 		}
 		return true;
 	}
-	private boolean didGameEnd(String winLoss) {
-		if (areAllButtonsDisabled(b1, b2, b3)) {
-//			Platform.runLater(() -> primaryStage.setScene(createPlayAgainScene()));
-			return true;
-		}
-		return false;
-	}
 
+	// checks if game ended
 	private boolean didGameEnd() {
 		if (areAllButtonsDisabled(b1, b2, b3)) {
-//			System.out.println("All buttons are disabled. Changing to Play Again Scene.");
-//			Platform.runLater(() -> primaryStage.setScene(createPlayAgainScene()));
 			return true;
 		}
 		return false;
 	}
 
+	// send signal object whether user wants to play again or quit
 	private void sendSignal(String signal) {
-		DataExchange sendData = new DataExchange(signal); // Use the appropriate constructor
-		sendData.sendMessage(outputStream); // Send the DataExchange object
+		DataExchange sendData = new DataExchange(signal);
+		sendData.sendMessage(outputStream);
 	}
 
+	// play again or quit screen
 	private Scene createPlayAgainScene(String winLoss) {
-		Label questionLabel = new Label("You "+ winLoss + "... Do you want to play again?");
-		Button playAgainButton = new Button("Play Again");
-		Button quitButton = new Button("Quit");
+		Label questionLabel = new Label("You " + winLoss + "... Do you want to play again?");
+		questionLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+		questionLabel.setAlignment(Pos.CENTER);
 
+		Button playAgainButton = new Button("Play Again");
+		playQuitButtons(playAgainButton, true);
+
+		Button quitButton = new Button("Quit");
+		playQuitButtons(quitButton, false);
+
+		// if the user wants to play again, reset
 		playAgainButton.setOnAction(e -> {
 			Platform.runLater(() -> {
 				b1.setDisable(false);
@@ -177,6 +186,7 @@ public class GuiClient extends Application{
 			});
 		});
 
+		// if the user wants to quit
 		quitButton.setOnAction(e -> {
 			sendSignal("QUIT");
 			Platform.exit();
@@ -188,44 +198,44 @@ public class GuiClient extends Application{
 		return new Scene(layout, 300, 200);
 	}
 
-	private void testingPurposes(){
-		b1.setDisable(true);
-		b2.setDisable(true);
+	// style the play/quit buttons
+	private void playQuitButtons(Button button, boolean isPlay) {
+		String playStyle = "-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-border-radius: 5;";
+		String quitStyle = "-fx-background-color: #f44336; -fx-text-fill: white; -fx-border-radius: 5;";
+
+		button.setStyle(isPlay ? playStyle : quitStyle);
+
+		button.setOnMouseEntered(e -> {
+			String hoverPlay = "-fx-background-color: #45a049; -fx-text-fill: white; -fx-border-radius: 5;";
+			String hoverQuit = "-fx-background-color: #e53935; -fx-text-fill: white; -fx-border-radius: 5;";
+			button.setStyle(isPlay ? hoverPlay : hoverQuit);
+		});
+
+		button.setOnMouseExited(e -> button.setStyle(isPlay ? playStyle : quitStyle));
 	}
 
+	// choose category screen
 	private Scene createCategoryScene() {
 
 		if(didGameEnd()){
 			Platform.runLater(() -> primaryStage.setScene(createPlayAgainScene("Won")));
-		}else if (lostAni == 3 || lostUS == 3 || lostSuper == 3 || consecLoss == 3){
+		} else if (lostAni == 3 || lostUS == 3 || lostSuper == 3 || consecLoss == 3){
 			Platform.runLater(() -> primaryStage.setScene(createPlayAgainScene("Lost")));
 		}
 
 		Label categoryLabel = new Label("Select Category:");
+		categoryLabel.setStyle("-fx-font-size: 18; -fx-font-weight: bold;");
+		categoryLabel.setAlignment(Pos.CENTER);
+
+		styleCategoryButton(b1, "Animals");
+		styleCategoryButton(b2, "U.S. States");
+		styleCategoryButton(b3, "Superheroes");
 
 		VBox gameLayout = new VBox(10);
 		gameLayout.getChildren().addAll(categoryLabel, b1, b2, b3);
-
 		gameLayout.setAlignment(Pos.CENTER);
 
-		// for easy debugging
-//		testingPurposes();
-
-		b1.setOnAction(event -> {
-//			b1.setDisable(true);
-			handleCategoryButtonClick("Animals");
-		});
-
-		b2.setOnAction(event -> {
-//			b2.setDisable(true);
-			handleCategoryButtonClick("U.S. States");
-		});
-
-		b3.setOnAction(event -> {
-//			b3.setDisable(true);
-			handleCategoryButtonClick("Superheroes");
-		});
-
+		System.out.println("entered create category scene");
 
 		StackPane centerLayout = new StackPane();
 		centerLayout.getChildren().add(gameLayout);
@@ -234,28 +244,56 @@ public class GuiClient extends Application{
 		return new Scene(centerLayout, 500, 400);
 	}
 
+	// styling for category buttons
+	private void styleCategoryButton(Button button, String category) {
+		String enabledStyle = "-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-border-radius: 5;";
+		String disabledStyle = "-fx-background-color: #757575; -fx-text-fill: white; -fx-border-radius: 5;";
+
+		button.setStyle(button.isDisabled() ? disabledStyle : enabledStyle);
+
+		button.disabledProperty().addListener((obs, wasDisabled, isDisabled) -> {
+			button.setStyle(isDisabled ? disabledStyle : enabledStyle);
+		});
+
+		button.setOnMouseEntered(e -> {
+			if (!button.isDisabled()) {
+				button.setStyle("-fx-background-color: #45a049; -fx-text-fill: white; -fx-border-radius: 5;");
+			}
+		});
+		button.setOnMouseExited(e -> {
+			if (!button.isDisabled()) {
+				button.setStyle(enabledStyle);
+			}
+		});
+
+		button.setOnAction(event -> handleCategoryButtonClick(category));
+	}
+
+	// update letters known based on indices so that we can update ui
 	private void updateWordState(char guessedLetter, Set<Integer> indices) {
 		StringBuilder currentWordState = new StringBuilder(wordStateText.getText());
 		for (Integer index : indices) {
-			currentWordState.setCharAt(index * 2, guessedLetter); // Update at index considering spaces
+			currentWordState.setCharAt(index * 2, guessedLetter);
 		}
 		wordStateText.setText(currentWordState.toString());
 		System.out.println(wordStateText.getText());
 	}
 
+	// check if user can retry categories
 	private boolean canRetryCategories() {
 		for (Map.Entry<String, Integer> entry : categoryRetries.entrySet()) {
 			if (entry.getValue() <= 2) {
-				return true; // Player can retry this category
+				return true; // player can retry this category
 			}
 		}
-		return false; // Player has exhausted retries for all categories
+		return false; // player has exhausted retries for all categories
 	}
 
+	// disable category buttons if the user cannot play the category anymore
 	private void disableButtonsForExhaustedCategories() {
 		for (Map.Entry<String, Integer> entry : categoryRetries.entrySet()) {
 			if (entry.getValue() >= 2) {
-				// Disable the button for the category if the player has exhausted retries
+				// disable the button for the category if the player has exhausted retries
 				switch (entry.getKey()) {
 					case "Animals":
 						b1.setDisable(true);
@@ -274,6 +312,7 @@ public class GuiClient extends Application{
 		}
 	}
 
+	// disable all categories b/c user won
 	private void disableButtonsForExhaustedCategoriesW(String category) {
 		switch (category) {
 			case "Animals":
@@ -288,7 +327,7 @@ public class GuiClient extends Application{
 		}
 	}
 
-
+	// when the user presses submit
 	private void handleGuessSubmit(char c){
 		// send the character
 		DataExchange sendChar = new DataExchange("none", c);
@@ -329,8 +368,10 @@ public class GuiClient extends Application{
 			Platform.runLater(() -> {
 				String lossMessage = "Congratulations! You've guessed the word!";
 				Runnable sceneChange = () -> {
-					if (!didGameEnd("WIN")){
+					if (!didGameEnd()){
 						disableButtonsForExhaustedCategoriesW(sendData.getCategory());
+						primaryStage.setScene(createCategoryScene());
+					} else {
 						primaryStage.setScene(createCategoryScene());
 					}
 				};
@@ -344,7 +385,7 @@ public class GuiClient extends Application{
 			Platform.runLater(() -> {
 				String lossMessage = "Sorry! You've run out of guesses.";
 				Runnable sceneChange = () -> {
-					if (!didGameEnd("LOSS")){
+					if (!didGameEnd()){
 						consecLoss += 1;
 						categoryRetries.put(sendData.getCategory(), categoryRetries.getOrDefault(sendData.getCategory(), 0) + 1);
 						if (!canRetryCategories()) {
@@ -353,6 +394,8 @@ public class GuiClient extends Application{
 						}else {
 							primaryStage.setScene(createCategoryScene());
 						}
+					} else {
+						primaryStage.setScene(createCategoryScene());
 					}
 				};
 				showMessageAndWait(lossMessage, sceneChange);
@@ -361,6 +404,7 @@ public class GuiClient extends Application{
 		}
 	}
 
+	// initialize the '_'s in the word for the ui
 	private void initializeWordState(int wordLength) {
 		StringBuilder initialWordState = new StringBuilder();
 		for (int i = 0; i < wordLength; i++) {
@@ -372,11 +416,21 @@ public class GuiClient extends Application{
 		wordStateText.setText(initialWordState.toString());
 		System.out.println(wordStateText.getText());
 	}
+
+	// game scene
 	private Scene createGameScene() {
 		// set up screen
 		Label promptLabel = new Label("Enter a letter to guess:");
+		promptLabel.setStyle("-fx-font-weight: bold;");
+
 		TextField letterField = new TextField();
+		letterField.setStyle("-fx-border-color: #BDBDBD; -fx-border-radius: 3;");
+
 		Button submitButton = new Button("Submit Guess");
+		submitButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-border-radius: 5;");
+		submitButton.setOnMouseEntered(e -> submitButton.setStyle("-fx-background-color: #45a049; -fx-text-fill: white; -fx-border-radius: 5;"));
+		submitButton.setOnMouseExited(e -> submitButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-border-radius: 5;"));
+
 		Label guessedLettersLabel = new Label("Guessed Letters: ");
 		guessedLettersLabel.setStyle("-fx-font-weight: bold;");
 
@@ -439,13 +493,18 @@ public class GuiClient extends Application{
 
 		return new Scene(guessLayout, 500, 400);
 	}
+
+	// when the user clicks a category
 	private void handleCategoryButtonClick(String selectedCategory) {
 		// send message to server
+		System.out.println("entered handle category button click");
 		sendData.setCategory(selectedCategory);
 		sendData.sendMessage(outputStream);
-
+		System.out.println("success sent to server");
 		primaryStage.setScene(createGameScene());
 	}
+
+	// trying to connect to the server
 	private boolean connectToServer(int port) throws InterruptedException {
 		client = new Client(port, data -> {
 			System.out.println("Received data: " + data);
@@ -462,6 +521,8 @@ public class GuiClient extends Application{
 			return false;
 		}
 	}
+
+	// used for error alerts
 	private void showAlert(String title, String content) {
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.setTitle(title);
@@ -469,6 +530,8 @@ public class GuiClient extends Application{
 		alert.setContentText(content);
 		alert.showAndWait();
 	}
+
+	// used for notifying if the letter was found or not
 	private void displayMessage(String message) {
 		Platform.runLater(() -> {
 			Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -486,6 +549,8 @@ public class GuiClient extends Application{
 			alert.showAndWait();
 		});
 	}
+
+	// used to show win/loss alert
 	private void showMessageAndWait(String message, Runnable postDisplayAction) {
 		Platform.runLater(() -> {
 			Alert alert = new Alert(Alert.AlertType.INFORMATION);

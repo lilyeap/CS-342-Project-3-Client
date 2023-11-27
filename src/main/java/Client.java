@@ -6,15 +6,11 @@ import java.net.Socket;
 import java.util.function.Consumer;
 
 public class Client extends Thread{
-	String serverAddress;
 	int port;
 	Socket socketClient;
 	ObjectOutputStream out;
 	ObjectInputStream in;
-	int remainingGuesses;
-	char[] userGuess;
-	boolean roundEnded;
-	boolean roundResult;
+
 	Consumer<Serializable> callback;
 
 	Client(int serverPort, Consumer<Serializable> call){
