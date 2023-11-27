@@ -75,15 +75,30 @@ public class GuiClient extends Application{
 	}
 
 	private Scene createLoginScene() {
-		Label ipLabel = new Label("Please Enter IP Address:");
-		Label portLabel = new Label("Please Enter Port Number to Connect to:");
 
-		VBox loginLayout = new VBox(10); // 10 is the spacing between children
+		Label ipLabel = new Label("Please Enter IP Address:");
+		ipLabel.setStyle("-fx-font-weight: bold;");
+		ipLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #6A1B9A;");
+
+		ipField.setPromptText("127.0.0.1");
+		ipField.setStyle("-fx-border-color: #BDBDBD; -fx-border-radius: 3;");
+
+		Label portLabel = new Label("Please Enter Port Number to Connect to:");
+		portLabel.setStyle("-fx-font-weight: bold;");
+		portLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #6A1B9A;");
+
+		loginButton.setStyle("-fx-background-color: #C8A2C8; -fx-text-fill: white; -fx-border-radius: 5;");
+		loginButton.setOnMouseEntered(e -> loginButton.setStyle("-fx-background-color: #B291B2; -fx-text-fill: white; -fx-border-radius: 5;"));
+		loginButton.setOnMouseExited(e -> loginButton.setStyle("-fx-background-color: #C8A2C8; -fx-text-fill: white; -fx-border-radius: 5;"));
+
+		VBox loginLayout = new VBox(10);
 		loginLayout.getChildren().addAll(
-				ipLabel, ipField, // Add IP address field
+				ipLabel, ipField,
 				portLabel, portField,
 				loginButton
 		);
+		loginLayout.setAlignment(Pos.CENTER);
+		loginLayout.setStyle("-fx-background-color: #E9E0F8;");
 
 		return new Scene(loginLayout, 500, 400);
 	}
@@ -110,14 +125,14 @@ public class GuiClient extends Application{
 		instructionsLabel.setWrapText(true);
 
 		Button startPlayButton = new Button("Start Play");
-		startPlayButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-border-radius: 5;");
-		startPlayButton.setOnMouseEntered(e -> startPlayButton.setStyle("-fx-background-color: #45a049; -fx-text-fill: white; -fx-border-radius: 5;"));
-		startPlayButton.setOnMouseExited(e -> startPlayButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-border-radius: 5;"));
+		startPlayButton.setStyle("-fx-background-color: #8BC34A; -fx-text-fill: white; -fx-border-radius: 5;");
+		startPlayButton.setOnMouseEntered(e -> startPlayButton.setStyle("-fx-background-color: #7CB342; -fx-text-fill: white; -fx-border-radius: 5;"));
+		startPlayButton.setOnMouseExited(e -> startPlayButton.setStyle("-fx-background-color: #8BC34A; -fx-text-fill: white; -fx-border-radius: 5;"));
 
 		Button exitButton = new Button("Exit Game");
-		exitButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-border-radius: 5;");
-		exitButton.setOnMouseEntered(e -> exitButton.setStyle("-fx-background-color: #e53935; -fx-text-fill: white; -fx-border-radius: 5;"));
-		exitButton.setOnMouseExited(e -> exitButton.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-border-radius: 5;"));
+		exitButton.setStyle("-fx-background-color: #E57373; -fx-text-fill: white; -fx-border-radius: 5;");
+		exitButton.setOnMouseEntered(e -> exitButton.setStyle("-fx-background-color: #EF5350; -fx-text-fill: white; -fx-border-radius: 5;"));
+		exitButton.setOnMouseExited(e -> exitButton.setStyle("-fx-background-color: #E57373; -fx-text-fill: white; -fx-border-radius: 5;"));
 
 		// Set the action for the "Start Play" button
 		startPlayButton.setOnAction(event -> {
@@ -161,7 +176,7 @@ public class GuiClient extends Application{
 	// play again or quit screen
 	private Scene createPlayAgainScene(String winLoss) {
 		Label questionLabel = new Label("You " + winLoss + "... Do you want to play again?");
-		questionLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold;");
+		questionLabel.setStyle("-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #F57C00;");
 		questionLabel.setAlignment(Pos.CENTER);
 
 		Button playAgainButton = new Button("Play Again");
@@ -194,28 +209,36 @@ public class GuiClient extends Application{
 
 		VBox layout = new VBox(10, questionLabel, playAgainButton, quitButton);
 		layout.setAlignment(Pos.CENTER);
+		layout.setStyle("-fx-background-color: #FFF3E0;");
 
 		return new Scene(layout, 300, 200);
 	}
 
 	// style the play/quit buttons
 	private void playQuitButtons(Button button, boolean isPlay) {
-		String playStyle = "-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-border-radius: 5;";
-		String quitStyle = "-fx-background-color: #f44336; -fx-text-fill: white; -fx-border-radius: 5;";
+		// Soft green for play button
+		String playStyle = "-fx-background-color: #FFB74D; -fx-text-fill: white; -fx-border-radius: 5;";
+		String hoverPlay = "-fx-background-color: #FFA726; -fx-text-fill: white; -fx-border-radius: 5;";
+
+		// Gentle red for quit button
+		String quitStyle = "-fx-background-color: #E57373; -fx-text-fill: white; -fx-border-radius: 5;";
+		String hoverQuit = "-fx-background-color: #EF5350; -fx-text-fill: white; -fx-border-radius: 5;";
 
 		button.setStyle(isPlay ? playStyle : quitStyle);
 
 		button.setOnMouseEntered(e -> {
-			String hoverPlay = "-fx-background-color: #45a049; -fx-text-fill: white; -fx-border-radius: 5;";
-			String hoverQuit = "-fx-background-color: #e53935; -fx-text-fill: white; -fx-border-radius: 5;";
 			button.setStyle(isPlay ? hoverPlay : hoverQuit);
 		});
 
-		button.setOnMouseExited(e -> button.setStyle(isPlay ? playStyle : quitStyle));
+		button.setOnMouseExited(e -> {
+			button.setStyle(isPlay ? playStyle : quitStyle);
+		});
 	}
+
 
 	// choose category screen
 	private Scene createCategoryScene() {
+		String backgroundStyle = "-fx-background-color: #E6F0FA;";
 
 		if(didGameEnd()){
 			Platform.runLater(() -> primaryStage.setScene(createPlayAgainScene("Won")));
@@ -234,6 +257,7 @@ public class GuiClient extends Application{
 		VBox gameLayout = new VBox(10);
 		gameLayout.getChildren().addAll(categoryLabel, b1, b2, b3);
 		gameLayout.setAlignment(Pos.CENTER);
+		gameLayout.setStyle(backgroundStyle);
 
 		System.out.println("entered create category scene");
 
@@ -246,7 +270,7 @@ public class GuiClient extends Application{
 
 	// styling for category buttons
 	private void styleCategoryButton(Button button, String category) {
-		String enabledStyle = "-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-border-radius: 5;";
+		String enabledStyle = "-fx-background-color: #4DB6AC; -fx-text-fill: white; -fx-border-radius: 5;";
 		String disabledStyle = "-fx-background-color: #757575; -fx-text-fill: white; -fx-border-radius: 5;";
 
 		button.setStyle(button.isDisabled() ? disabledStyle : enabledStyle);
@@ -257,7 +281,7 @@ public class GuiClient extends Application{
 
 		button.setOnMouseEntered(e -> {
 			if (!button.isDisabled()) {
-				button.setStyle("-fx-background-color: #45a049; -fx-text-fill: white; -fx-border-radius: 5;");
+				button.setStyle("-fx-background-color: #26A69A; -fx-text-fill: white; -fx-border-radius: 5;");
 			}
 		});
 		button.setOnMouseExited(e -> {
@@ -369,6 +393,7 @@ public class GuiClient extends Application{
 				String lossMessage = "Congratulations! You've guessed the word!";
 				Runnable sceneChange = () -> {
 					if (!didGameEnd()){
+						consecLoss = 0;
 						disableButtonsForExhaustedCategoriesW(sendData.getCategory());
 						primaryStage.setScene(createCategoryScene());
 					} else {
@@ -427,9 +452,9 @@ public class GuiClient extends Application{
 		letterField.setStyle("-fx-border-color: #BDBDBD; -fx-border-radius: 3;");
 
 		Button submitButton = new Button("Submit Guess");
-		submitButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-border-radius: 5;");
-		submitButton.setOnMouseEntered(e -> submitButton.setStyle("-fx-background-color: #45a049; -fx-text-fill: white; -fx-border-radius: 5;"));
-		submitButton.setOnMouseExited(e -> submitButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-border-radius: 5;"));
+		submitButton.setStyle("-fx-background-color: #81C784; -fx-text-fill: white; -fx-border-radius: 5;");
+		submitButton.setOnMouseEntered(e -> submitButton.setStyle("-fx-background-color: #66BB6A ; -fx-text-fill: white; -fx-border-radius: 5;"));
+		submitButton.setOnMouseExited(e -> submitButton.setStyle("-fx-background-color: #81C784; -fx-text-fill: white; -fx-border-radius: 5;"));
 
 		Label guessedLettersLabel = new Label("Guessed Letters: ");
 		guessedLettersLabel.setStyle("-fx-font-weight: bold;");
